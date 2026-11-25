@@ -22,6 +22,7 @@
         <button class="nav-link" data-view="agents"><span>◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
         <button class="nav-link" data-view="departments"><span>▦</span> Departments</button>
         <button class="nav-link" data-view="tasks"><span>☷</span> Tasks & Projects</button>
+        <button class="nav-link" data-view="workflows"><span>⤳</span> Team Workflows</button>
         <button class="nav-link" data-view="approvals"><span>✓</span> Approval Center <b id="nav-approval-count">0</b></button>
         <button class="nav-link" data-view="intelligence"><span>⌕</span> Intelligence Engine</button>
       </nav>
@@ -88,6 +89,12 @@
           <div id="task-board" class="task-board"></div>
         </section>
 
+        <section class="view" id="view-workflows">
+          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · WORKFLOW BUILDER</div><h1>Team workflows</h1><p>Turn a goal into coordinated steps and assign each step to the right agent. You stay in charge of every action.</p></div><button class="primary-button" data-action="new-workflow">＋ Build a workflow</button></div>
+          <div class="notice-box">Workflow plans are generated from built-in templates in this release. Agents do not yet execute tasks or call AI models; this page organizes work for your review.</div>
+          <div id="workflow-list" class="workflow-list"></div>
+        </section>
+
         <section class="view" id="view-approvals">
           <div class="page-heading"><div><div class="eyebrow">HUMAN OVERSIGHT</div><h1>Approval center</h1><p>Review consequential actions before an agent can proceed.</p></div></div>
           <div class="notice-box">Your agents cannot send, publish, purchase, delete, or make other consequential changes without your approval.</div>
@@ -137,6 +144,15 @@
       <label>Assign to an agent<select id="task-agent"><option value="">Leave unassigned</option></select></label>
       <label>Priority<select id="task-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
       <div class="modal-actions"><button type="button" class="secondary-button" data-close="task-dialog">Cancel</button><button class="primary-button" type="submit">Create task</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="workflow-dialog" class="modal">
+    <form id="workflow-form" method="dialog">
+      <div class="modal-heading"><div><div class="eyebrow">QUANTUM CORE</div><h2>Build a team workflow</h2><p>Choose a goal. We will prepare a suggested team plan.</p></div><button type="button" class="icon-button" data-close="workflow-dialog" aria-label="Close">✕</button></div>
+      <label>What are you trying to accomplish?<textarea id="workflow-objective" rows="3" required maxlength="500" placeholder="Example: Research the market and prepare a launch plan for my new business."></textarea></label>
+      <label>Workflow type<select id="workflow-template"><option value="general">General project</option><option value="research">Research and verification</option><option value="business">Start or organize a business</option><option value="marketing">Marketing campaign</option><option value="software">Build a software product</option></select></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="workflow-dialog">Cancel</button><button class="primary-button" type="submit">Create team plan</button></div>
     </form>
   </dialog>
 
