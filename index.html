@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090d18">
+  <meta name="description" content="An accessible AI workforce command center. Create agents, organize departments, and coordinate work with human control.">
+  <title>Accessible AI Command Center</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div><strong>AI COMMAND</strong><span>CENTER</span></div>
+      </div>
+      <div class="workspace-label">YOUR WORKSPACE</div>
+      <nav aria-label="Main navigation">
+        <button class="nav-link active" data-view="overview"><span>⌂</span> Overview</button>
+        <button class="nav-link" data-view="agents"><span>◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
+        <button class="nav-link" data-view="departments"><span>▦</span> Departments</button>
+        <button class="nav-link" data-view="tasks"><span>☷</span> Tasks & Projects</button>
+        <button class="nav-link" data-view="approvals"><span>✓</span> Approval Center <b id="nav-approval-count">0</b></button>
+        <button class="nav-link" data-view="intelligence"><span>⌕</span> Intelligence Engine</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="safety-note"><span class="status-dot"></span><div><strong>You are in control</strong><small>Agents need approval for important actions.</small></div></div>
+        <button class="nav-link" data-view="settings"><span>⚙</span> Accessibility & Settings</button>
+        <div class="user-chip"><div class="avatar">U</div><div><strong>Your workspace</strong><small>Personal command center</small></div></div>
+      </div>
+    </aside>
+
+    <main id="main" class="main-area">
+      <header class="topbar">
+        <button class="icon-button mobile-menu" id="menu-toggle" aria-label="Open navigation">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-current">Overview</strong></div>
+        <div class="top-actions">
+          <button class="quiet-button" id="focus-toggle" aria-pressed="false">◉ Focus mode</button>
+          <button class="primary-button small" data-action="new-agent">＋ Create agent</button>
+        </div>
+      </header>
+      <div class="content">
+        <section class="view active" id="view-overview">
+          <div class="welcome-row">
+            <div><div class="eyebrow">YOUR AI WORKFORCE</div><h1>Your command center.</h1><p class="subheading">Tell your team what you need. Your agents help carry the work.</p></div>
+            <div class="date-chip" id="today-label">YOUR WORKSPACE</div>
+          </div>
+          <section class="command-panel" aria-labelledby="command-title">
+            <div class="command-glow"></div>
+            <div class="command-heading"><div class="orb">✦</div><div><span class="eyebrow">EXECUTIVE ASSISTANT</span><h2 id="command-title">What would you like help with?</h2></div></div>
+            <form id="command-form" class="command-form">
+              <label class="sr-only" for="command-input">Describe what you need help with</label>
+              <textarea id="command-input" rows="2" placeholder="Tell your AI workforce what you need done. Use everyday language..."></textarea>
+              <div class="command-controls"><div class="hint">Your request becomes a task you can assign and track.</div><div class="command-buttons"><button type="button" class="quiet-button" id="voice-button" title="Use speech recognition">🎙 Voice</button><button class="primary-button" type="submit">Create task <span>→</span></button></div></div>
+            </form>
+            <div class="quick-prompts"><button data-prompt="Research this topic and summarize the most reliable sources.">Research something</button><button data-prompt="Help me organize my business paperwork into clear steps.">Organize paperwork</button><button data-prompt="Help me plan and create a marketing campaign.">Plan a campaign</button><button data-prompt="Break this goal into small manageable tasks.">Break down a goal</button></div>
+          </section>
+          <div class="section-heading"><div><h2>Workforce at a glance</h2><p>Your activity and progress</p></div><button class="text-button" data-view-link="agents">Manage agents →</button></div>
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-icon blue">◈</div><span>AI AGENTS</span><strong id="stat-agents">0</strong><small>In your workforce</small></article>
+            <article class="stat-card"><div class="stat-icon purple">▦</div><span>DEPARTMENTS</span><strong id="stat-departments">0</strong><small>Organized teams</small></article>
+            <article class="stat-card"><div class="stat-icon cyan">☷</div><span>OPEN TASKS</span><strong id="stat-tasks">0</strong><small>Work in progress</small></article>
+            <article class="stat-card"><div class="stat-icon amber">◷</div><span>NEEDS APPROVAL</span><strong id="stat-approvals">0</strong><small>You make the decision</small></article>
+          </div>
+          <div class="dashboard-grid">
+            <section class="panel"><div class="panel-heading"><div><h2>Active work</h2><p>Tasks across your departments</p></div><button class="text-button" data-view-link="tasks">View all →</button></div><div id="overview-tasks" class="task-list"></div></section>
+            <section class="panel"><div class="panel-heading"><div><h2>Your departments</h2><p>Organize agents by responsibility</p></div><button class="text-button" data-view-link="departments">View all →</button></div><div id="overview-departments" class="department-list"></div></section>
+          </div>
+          <div class="human-control"><span>✦</span><div><strong>Human-first AI, by design</strong><p>Your agents can prepare and recommend. You approve consequential actions. You can pause or change assignments at any time.</p></div></div>
+        </section>
+
+        <section class="view" id="view-agents">
+          <div class="page-heading"><div><div class="eyebrow">AGENT FACTORY</div><h1>My AI agents</h1><p>Create a team of specialized assistants. You decide their jobs and permissions.</p></div><button class="primary-button" data-action="new-agent">＋ Create an agent</button></div>
+          <div class="filter-row"><label class="search-box">⌕ <input id="agent-search" placeholder="Search your agents..." aria-label="Search agents"></label><select id="agent-department-filter" aria-label="Filter by department"><option value="">All departments</option></select></div>
+          <div id="agent-grid" class="agent-grid"></div>
+        </section>
+
+        <section class="view" id="view-departments">
+          <div class="page-heading"><div><div class="eyebrow">ORGANIZATION</div><h1>Departments</h1><p>Group your agents into teams with clear responsibilities.</p></div><button class="primary-button" data-action="new-department">＋ Add department</button></div>
+          <div id="department-grid" class="department-grid"></div>
+        </section>
+
+        <section class="view" id="view-tasks">
+          <div class="page-heading"><div><div class="eyebrow">WORK MANAGEMENT</div><h1>Tasks & projects</h1><p>See what is planned, in progress, and completed.</p></div><button class="primary-button" data-action="new-task">＋ Create a task</button></div>
+          <div class="task-filters"><button class="filter-chip selected" data-task-filter="all">All tasks</button><button class="filter-chip" data-task-filter="todo">To do</button><button class="filter-chip" data-task-filter="inprogress">In progress</button><button class="filter-chip" data-task-filter="done">Completed</button></div>
+          <div id="task-board" class="task-board"></div>
+        </section>
+
+        <section class="view" id="view-approvals">
+          <div class="page-heading"><div><div class="eyebrow">HUMAN OVERSIGHT</div><h1>Approval center</h1><p>Review consequential actions before an agent can proceed.</p></div></div>
+          <div class="notice-box">Your agents cannot send, publish, purchase, delete, or make other consequential changes without your approval.</div>
+          <div id="approval-list" class="approval-list"></div>
+        </section>
+
+        <section class="view" id="view-intelligence">
+          <div class="page-heading"><div><div class="eyebrow">RESEARCH & VERIFICATION</div><h1>Intelligence engine</h1><p>A workspace for research, source checking, and clear reporting.</p></div></div>
+          <div class="feature-grid">
+            <article class="feature-card"><div class="feature-icon">⌕</div><h3>Research desk</h3><p>Organize research requests and assign them to an agent. Live web research requires a connected search provider.</p><button class="secondary-button" data-action="research-task">Create research task</button></article>
+            <article class="feature-card"><div class="feature-icon">✓</div><h3>Source verification</h3><p>Record source links, publication dates, claims, and verification notes for human review.</p><button class="secondary-button" data-action="verification-task">Create verification task</button></article>
+            <article class="feature-card"><div class="feature-icon">⚑</div><h3>Risk review</h3><p>Collect warning signs and evidence. Risk signals are prompts for review, not proof of fraud.</p><button class="secondary-button" data-action="risk-task">Create risk review</button></article>
+          </div>
+          <div class="notice-box">This release provides task organization only. It does not yet browse the web, verify claims automatically, or make fraud determinations.</div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <div class="page-heading"><div><div class="eyebrow">BUILT AROUND YOU</div><h1>Accessibility & settings</h1><p>Adjust the workspace to reduce friction and make work easier to follow.</p></div></div>
+          <div class="settings-grid">
+            <section class="panel settings-panel"><h2>Display preferences</h2><label class="setting-row"><span><strong>Larger text</strong><small>Increase the size of interface text.</small></span><input type="checkbox" id="large-text"></label><label class="setting-row"><span><strong>High contrast</strong><small>Strengthen borders and text contrast.</small></span><input type="checkbox" id="high-contrast"></label><label class="setting-row"><span><strong>Reduce motion</strong><small>Limit decorative movement and transitions.</small></span><input type="checkbox" id="reduce-motion"></label><label class="setting-row"><span><strong>Simple Mode</strong><small>Hide extra detail and simplify the workspace.</small></span><input type="checkbox" id="simple-mode"></label></section>
+            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode hides nonessential panels while you work. Rescue Mode gives you one clear next step when a task feels overwhelming.</p><button class="primary-button" id="rescue-button">✦ Start Rescue Mode</button><hr><h3>Data on this device</h3><p>Your current prototype data is stored in this browser only. It is not yet synced to an account or server.</p><button class="danger-button" id="export-data">Export my workspace data</button></section>
+          </div>
+        </section>
+      </div>
+      <footer class="footer"><span>ACCESSIBLE AI COMMAND CENTER</span><span>People first. AI second. Always in your control.</span></footer>
+    </main>
+  </div>
+
+  <dialog id="agent-dialog" class="modal">
+    <form id="agent-form" method="dialog">
+      <div class="modal-heading"><div><div class="eyebrow">AGENT FACTORY</div><h2 id="agent-modal-title">Create your AI agent</h2><p>Give your agent a clear job. You can change it later.</p></div><button type="button" class="icon-button" data-close="agent-dialog" aria-label="Close">✕</button></div>
+      <input type="hidden" id="agent-id">
+      <label>Agent name<input id="agent-name" required maxlength="60" placeholder="Example: Research Assistant"></label>
+      <label>Job or specialty<input id="agent-role" required maxlength="100" placeholder="What is this agent responsible for?"></label>
+      <label>Department<select id="agent-department" required></select></label>
+      <label>Instructions<textarea id="agent-instructions" rows="3" placeholder="Describe the work this agent should do..."></textarea></label>
+      <label>Permission level<select id="agent-permission"><option value="approval">Ask me before important actions</option><option value="prepare">Prepare work and wait for my review</option><option value="routine">Work on approved routine tasks</option></select></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="agent-dialog">Cancel</button><button class="primary-button" type="submit">Save agent</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="task-dialog" class="modal">
+    <form id="task-form" method="dialog">
+      <div class="modal-heading"><div><div class="eyebrow">WORK ASSIGNMENT</div><h2>Create a task</h2><p>Break work into clear, manageable assignments.</p></div><button type="button" class="icon-button" data-close="task-dialog" aria-label="Close">✕</button></div>
+      <label>Task title<input id="task-title" required maxlength="120" placeholder="What needs to get done?"></label>
+      <label>Details<textarea id="task-details" rows="3" placeholder="Add context or steps (optional)..."></textarea></label>
+      <label>Assign to an agent<select id="task-agent"><option value="">Leave unassigned</option></select></label>
+      <label>Priority<select id="task-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="task-dialog">Cancel</button><button class="primary-button" type="submit">Create task</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="department-dialog" class="modal">
+    <form id="department-form" method="dialog">
+      <div class="modal-heading"><div><div class="eyebrow">ORGANIZATION</div><h2>Add a department</h2><p>Create a team around a responsibility.</p></div><button type="button" class="icon-button" data-close="department-dialog" aria-label="Close">✕</button></div>
+      <label>Department name<input id="department-name" required maxlength="60" placeholder="Example: Customer Support"></label>
+      <label>Purpose<input id="department-purpose" maxlength="140" placeholder="What does this team handle?"></label>
+      <div class="modal-actions"><button type="button" class="secondary-button" data-close="department-dialog">Cancel</button><button class="primary-button" type="submit">Add department</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="rescue-dialog" class="modal rescue-modal">
+    <div class="modal-heading"><div><div class="eyebrow">ONE STEP AT A TIME</div><h2>Let's make this easier.</h2></div><button type="button" class="icon-button" data-close="rescue-dialog" aria-label="Close">✕</button></div>
+    <div class="rescue-content"><div class="rescue-star">✦</div><h3 id="rescue-title">You don't have to do everything at once.</h3><p id="rescue-text">Choose one small next step. You can pause, ask for help, or come back later.</p><button class="primary-button" data-close="rescue-dialog">I can do this step</button></div>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js" defer></script>
+</body>
+</html>
