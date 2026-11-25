@@ -19,5 +19,7 @@ jobs:
         run: |
           node --check app.js
           node --check brain.js
+          node --check memory.js
+          node --check executive.js
       - name: Check Python syntax
         run: python -m compileall -q backend
