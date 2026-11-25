@@ -48,3 +48,19 @@ A future AI execution feature must be designed to preserve the single-user requi
 ## Development checks
 
 GitHub Actions checks frontend JavaScript syntax, Python syntax, and backend tests. The backend tests verify that the personal local-only boundary stays closed.
+
+
+## Use-case catalog and agent coordination direction
+
+The backend now maintains a curated, searchable use-case catalog with entries for personal organization, memory support, accessibility, research, business planning, finance, markets and trading, software development, data analysis, marketing, sales, operations, project management, administration, education, health administration, recruiting, creative work, defensive security, travel, home management, communications, translation, QA, procurement, and nonprofit work.
+
+Catalog endpoints:
+- `GET /api/catalog?q=...` searches use cases, categories, agent roles, and workflow examples.
+- `GET /api/catalog/categories` lists category totals and aggregate selection counts.
+- `POST /api/catalog/usage` records a catalog entry selection by slug only.
+
+The usage index stores only a counter and last-used timestamp per catalog entry. It does not accept or store prompts, names, account identifiers, IP addresses, or private workspace content. The catalog is shared reference metadata; it is not a shared user workspace.
+
+### Agent-to-agent communication (#2)
+
+The product direction is structured agent-to-agent messages: handoff, question, status, result, and review. The existing private message/job endpoints remain disabled in the no-account release because a public server cannot safely determine which visitor owns a private message. The catalog is public and searchable; private handoff messages must remain in the user's local workspace until a private local runtime or an explicit secure identity boundary is implemented. No private messages are sent to the catalog.
