@@ -85,3 +85,24 @@ select:focus,.modal input:focus,.modal textarea:focus{border-color:#00ffff;box-s
 :focus-visible{outline-color:#00ffff!important;box-shadow:0 0 0 3px #00ffff33}
 @media(max-width:760px){.sidebar{background:linear-gradient(180deg,#09070d,#100817);border-right-color:#ff149377}.command-panel{box-shadow:0 0 22px #b026ff20}.topbar{border-bottom-color:#63245e}}
 @media(prefers-reduced-motion:reduce){.agent-card,.department-card,.feature-card,.primary-button{transition:none}}
+
+/* TEAM WORKFLOW BUILDER */
+.workflow-list{display:grid;gap:16px}
+.workflow-card{background:linear-gradient(145deg,#111019,#090b12);border:1px solid #7b2b78;border-radius:17px;padding:20px;box-shadow:0 0 24px #b026ff17}
+.workflow-top{display:flex;justify-content:space-between;gap:15px;align-items:flex-start}
+.workflow-top h2{font:600 18px 'Space Grotesk';margin:9px 0 4px;color:#fff}
+.workflow-top p{font-size:11px;color:var(--muted);margin:0}
+.workflow-progress{text-align:right;min-width:75px}
+.workflow-progress strong{display:block;font:600 24px 'Space Grotesk';color:#00ffff;text-shadow:0 0 13px #00ffff55}
+.workflow-progress small{font-size:10px;color:var(--muted)}
+.progress-track{height:7px;border-radius:10px;background:#292032;overflow:hidden;margin:17px 0}
+.progress-track span{display:block;height:100%;background:linear-gradient(90deg,#ff1493,#b026ff,#00ffff);box-shadow:0 0 12px #b026ff88;border-radius:10px}
+.workflow-steps{display:grid;gap:8px}
+.workflow-step{display:flex;align-items:center;gap:11px;padding:11px;background:#ffffff06;border:1px solid #ffffff0c;border-radius:10px}
+.step-number{width:25px;height:25px;flex:none;display:grid;place-items:center;border-radius:8px;background:#311333;color:#ff9ad4;font-size:11px;font-weight:700}
+.step-copy{flex:1;min-width:0}
+.step-copy strong,.step-copy small{display:block}
+.step-copy strong{font-size:11px}
+.step-copy small{font-size:10px;color:var(--muted);margin-top:3px}
+.workflow-footer{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.workflow-footer small{font-size:10px;color:var(--muted)}
