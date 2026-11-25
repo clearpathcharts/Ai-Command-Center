@@ -42,6 +42,9 @@ async def block_unscoped_workspace_routes(request, call_next):
         or path.startswith("/api/agents")
         or path.startswith("/api/tasks")
         or path.startswith("/api/approvals")
+        or path == "/api/brain/plan"
+        or path == "/api/ai/respond"
+        or path == "/api/ai/status"
         or path == "/api/memory"
         or path.startswith("/api/memory/")
         or path == "/api/agent-messages"
@@ -340,7 +343,7 @@ def list_agent_messages(workspace_id: Optional[str] = None, task_id: Optional[st
         return [dict(r) for r in rows]
 
 @app.post("/api/brain/plan")
-def create_brain_plan(item: BrainPlanIn):
+def create_brain_plan(item: BrainPlanIn, user=Depends(require_firebase_user)):
     """Deterministic starter planner; model-powered planning is a later integration."""
     request = item.request.lower()
     catalog = [
@@ -355,12 +358,12 @@ def create_brain_plan(item: BrainPlanIn):
     ]
     selected = [x for x in catalog if any(k in request for k in x["keywords"])] or [catalog[0], catalog[3]]
     with db() as conn:
-        existing = [dict(r) for r in conn.execute("SELECT id,name,role FROM agents")]
+        existing = [dict(r) for r in conn.execute("SELECT id,name,role FROM agents WHERE owner_uid=?", (user["uid"],))]
     output = []
     for suggestion in selected:
         match = next((a for a in existing if a["name"].casefold()==suggestion["name"].casefold() or a["role"].casefold()==suggestion["role"].casefold()), None)
         output.append({**suggestion, "existing_agent": match})
-    return {"workspace_id": item.workspace_id, "suggestions": output, "planner": "deterministic-starter",
+    return {"workspace_id": user["uid"], "suggestions": output, "planner": "deterministic-starter",
             "note": "This planner suggests agent templates; it does not run AI models or execute agent work."}
 
 
@@ -371,7 +374,7 @@ class AIRequest(BaseModel):
     temperature: float = Field(default=0.3, ge=0, le=1.5)
 
 @app.post("/api/ai/respond")
-def ai_respond(item: AIRequest):
+def ai_respond(item: AIRequest, user=Depends(require_firebase_user)):
     """OpenAI-compatible server-side model gateway. Provider keys remain in server env."""
     import json
     import urllib.request
@@ -409,7 +412,7 @@ def ai_respond(item: AIRequest):
         raise HTTPException(502, "Could not reach the configured AI provider.")
 
 @app.get("/api/ai/status")
-def ai_status():
+def ai_status(user=Depends(require_firebase_user)):
     return {
         "configured": bool(os.getenv("AI_API_KEY")),
         "provider_endpoint": os.getenv("AI_BASE_URL", "https://api.openai.com/v1"),
