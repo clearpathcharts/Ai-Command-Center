@@ -38,7 +38,8 @@ app.add_middleware(
 @app.middleware("http")
 async def enforce_local_only_mode(request, call_next):
     path = request.url.path
-    if path.startswith("/api/") and path != "/api/capabilities":
+    public_catalog_routes = path in {"/api/catalog", "/api/catalog/categories", "/api/catalog/usage"} or path.startswith("/api/catalog/")
+    if path.startswith("/api/") and path != "/api/capabilities" and not public_catalog_routes:
         return JSONResponse(
             status_code=503,
             content={
@@ -113,6 +114,62 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_approvals_owner ON approvals(owner_uid, created_at);
         """)
 init_db()
+
+with db() as _catalog_conn:
+    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS use_case_catalog (
+        slug TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT NOT NULL,
+        description TEXT NOT NULL, agent_roles TEXT NOT NULL, workflow_examples TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )""")
+    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS catalog_usage (
+        slug TEXT PRIMARY KEY, usage_count INTEGER NOT NULL DEFAULT 0,
+        last_used_at TEXT NOT NULL
+    )""")
+    seed_catalog(_catalog_conn)
+
+# Public, non-personal use-case catalog. Only curated catalog metadata and aggregate
+# category counters are stored here; user prompts, identities, IPs, and workspace data
+# are deliberately never accepted by these endpoints.
+CATALOG = [
+    ("personal-organization","Personal organization","Personal productivity","Planning, routines, reminders, prioritization, daily organization",["Personal Assistant","Executive Assistant"],["daily planning","routine design","priority sorting"]),
+    ("memory-support","Memory and continuity","Personal productivity","Remembering instructions, projects, preferences, decisions, and where work stopped",["Memory Librarian","Project Historian"],["resume work","search memories","capture decisions"]),
+    ("accessibility-support","Accessibility support","Accessibility","Simplifying complex tasks, step-by-step guidance, voice-friendly workflows, and cognitive load reduction",["Accessibility Guide","Task Simplifier"],["simplify instructions","one-step guidance","accessible workflows"]),
+    ("research","Research and investigation","Research","Gathering information, comparing options, checking sources, and producing evidence-based summaries",["Research Analyst","Source Verifier"],["research brief","competitor scan","fact checking"]),
+    ("business-planning","Business planning","Business","Business plans, operating models, launch plans, company structure, and strategic decisions",["Business Strategist","Operations Planner"],["business plan","launch roadmap","operating plan"]),
+    ("finance-analysis","Financial analysis","Finance","Budgeting, forecasting, financial modeling, revenue analysis, and scenario planning",["Financial Analyst","Forecasting Specialist"],["budget review","revenue model","scenario analysis"]),
+    ("markets-trading","Markets and trading research","Finance","Market research, trading education, watchlists, strategy documentation, and risk analysis",["Market Research Analyst","Trading Educator"],["market brief","strategy review","risk checklist"]),
+    ("software-development","Software development","Technology","Application planning, coding tasks, debugging, architecture, testing, and release coordination",["Software Architect","Developer","QA Engineer"],["feature build","bug investigation","release checklist"]),
+    ("data-analysis","Data analysis","Technology","Data cleaning, exploratory analysis, dashboards, reporting, and interpretation",["Data Analyst","Dashboard Builder"],["dataset review","KPI dashboard","trend analysis"]),
+    ("marketing","Marketing and campaigns","Marketing","Campaign strategy, audience research, content calendars, positioning, and performance review",["Marketing Strategist","Campaign Manager"],["campaign plan","audience profile","marketing calendar"]),
+    ("content-creation","Content and publishing","Marketing","Articles, social posts, scripts, newsletters, educational content, and editorial planning",["Content Writer","Editor"],["social content","video script","editorial calendar"]),
+    ("sales","Sales and customer growth","Business","Lead research, sales messaging, pipeline organization, proposals, and follow-up planning",["Sales Development Agent","Account Researcher"],["lead qualification","proposal draft","pipeline review"]),
+    ("customer-support","Customer support","Operations","Support triage, response drafting, knowledge-base maintenance, and issue categorization",["Support Specialist","Knowledge Manager"],["ticket triage","response draft","FAQ update"]),
+    ("operations","Business operations","Operations","Standard operating procedures, process mapping, task coordination, and operational reviews",["Operations Manager","Process Analyst"],["SOP creation","process audit","weekly review"]),
+    ("project-management","Project management","Operations","Project breakdown, milestones, dependencies, status reporting, and resource coordination",["Project Manager","Delivery Coordinator"],["project plan","milestone tracking","risk register"]),
+    ("legal-admin","Legal and administrative organization","Administration","Document organization, form explanations, contract issue spotting, and administrative preparation",["Document Organizer","Compliance Assistant"],["document checklist","contract issue list","filing preparation"]),
+    ("education","Education and tutoring","Education","Lesson planning, explanations, study guides, quizzes, and personalized learning sequences",["Tutor","Curriculum Designer"],["lesson plan","study guide","practice quiz"]),
+    ("health-admin","Health administration","Administration","Appointment preparation, question lists, records organization, and non-diagnostic health administration",["Appointment Coordinator","Records Organizer"],["appointment prep","records checklist","question list"]),
+    ("hr-recruiting","Human resources and recruiting","People","Role descriptions, candidate evaluation rubrics, onboarding, training, and team documentation",["Recruiting Coordinator","People Operations Agent"],["job description","interview rubric","onboarding plan"]),
+    ("design-creative","Design and creative work","Creative","Creative briefs, brand systems, design feedback, storyboards, and production planning",["Creative Director","Design Researcher"],["creative brief","brand guide","storyboard"]),
+    ("cybersecurity","Cybersecurity and safety","Technology","Defensive security reviews, policy checklists, incident documentation, and awareness training",["Security Analyst","Policy Reviewer"],["security checklist","incident timeline","awareness guide"]),
+    ("travel-planning","Travel and logistics","Personal productivity","Trip research, itinerary planning, packing lists, and logistics coordination",["Travel Planner","Logistics Coordinator"],["trip itinerary","packing checklist","travel comparison"]),
+    ("home-management","Home and family management","Personal productivity","Household projects, maintenance schedules, family calendars, and shopping plans",["Home Coordinator","Scheduling Assistant"],["maintenance plan","family schedule","shopping list"]),
+    ("writing-communications","Writing and communications","Communication","Emails, letters, meeting notes, difficult conversations, and communication review",["Writing Assistant","Communications Editor"],["email draft","meeting summary","message rewrite"]),
+    ("translation-localization","Translation and localization","Communication","Translation workflows, terminology management, and localized content review",["Translator","Localization Reviewer"],["translation","glossary","localized copy"]),
+    ("quality-assurance","Quality assurance and testing","Technology","Test plans, acceptance criteria, bug reproduction, regression checks, and release quality",["QA Lead","Test Engineer"],["test plan","bug report","regression suite"]),
+    ("procurement","Procurement and vendor review","Operations","Vendor comparisons, requirements lists, quote analysis, and purchasing preparation",["Procurement Analyst","Vendor Researcher"],["vendor comparison","requirements matrix","quote review"]),
+    ("nonprofit-community","Nonprofit and community work","Community","Program planning, grant research, volunteer coordination, and impact reporting",["Grant Researcher","Program Coordinator"],["grant research","volunteer plan","impact report"]),
+]
+
+def seed_catalog(conn):
+    for slug, title, category, description, roles, workflows in CATALOG:
+        conn.execute(
+            """INSERT OR IGNORE INTO use_case_catalog
+               (slug,title,category,description,agent_roles,workflow_examples,created_at)
+               VALUES (?,?,?,?,?,?,?)""",
+            (slug,title,category,description,"|".join(roles),"|".join(workflows),now())
+        )
+
 
 class DepartmentIn(BaseModel):
     id: str = Field(min_length=1, max_length=80)
@@ -230,6 +287,73 @@ def review_approval(approval_id: str, decision: str, user=Depends(require_fireba
         if result.rowcount==0:
             raise HTTPException(404,"Pending approval not found")
         return dict(conn.execute("SELECT id,title,description,agent_id,status,created_at,reviewed_at FROM approvals WHERE id=? AND owner_uid=?",(approval_id,user["uid"])).fetchone())
+
+
+@app.get("/api/catalog")
+def search_use_case_catalog(q: str = "", category: str = "", limit: int = 100, offset: int = 0):
+    """Search the curated public catalog without exposing user workspace data."""
+    limit, offset = max(1, min(limit, 200)), max(0, offset)
+    pattern = f"%{q.strip()}%"
+    with db() as conn:
+        rows = conn.execute(
+            """SELECT c.slug,c.title,c.category,c.description,c.agent_roles,c.workflow_examples,
+                      COALESCE(u.usage_count,0) AS usage_count
+               FROM use_case_catalog c LEFT JOIN catalog_usage u ON u.slug=c.slug
+               WHERE (?='' OR c.category=?)
+                 AND (?='' OR c.title LIKE ? OR c.category LIKE ? OR c.description LIKE ?
+                      OR c.agent_roles LIKE ? OR c.workflow_examples LIKE ?)
+               ORDER BY c.category,c.title LIMIT ? OFFSET ?""",
+            (category, category, q.strip(), pattern, pattern, pattern, pattern, pattern, limit, offset)
+        ).fetchall()
+        total = conn.execute(
+            """SELECT COUNT(*) FROM use_case_catalog
+               WHERE (?='' OR category=?) AND
+               (?='' OR title LIKE ? OR category LIKE ? OR description LIKE ?
+                OR agent_roles LIKE ? OR workflow_examples LIKE ?)""",
+            (category, category, q.strip(), pattern, pattern, pattern, pattern, pattern)
+        ).fetchone()[0]
+    items = []
+    for row in rows:
+        item = dict(row)
+        item["agent_roles"] = item["agent_roles"].split("|") if item["agent_roles"] else []
+        item["workflow_examples"] = item["workflow_examples"].split("|") if item["workflow_examples"] else []
+        items.append(item)
+    return {"items": items, "total": total, "limit": limit, "offset": offset}
+
+
+@app.get("/api/catalog/categories")
+def list_catalog_categories():
+    with db() as conn:
+        rows = conn.execute(
+            """SELECT c.category,COUNT(*) AS use_cases,
+                      COALESCE(SUM(u.usage_count),0) AS total_uses
+               FROM use_case_catalog c LEFT JOIN catalog_usage u ON u.slug=c.slug
+               GROUP BY c.category ORDER BY c.category"""
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+class CatalogUsageIn(BaseModel):
+    slug: str = Field(min_length=2, max_length=80, pattern="^[a-z0-9-]+$")
+
+
+@app.post("/api/catalog/usage", status_code=202)
+def record_catalog_use(item: CatalogUsageIn):
+    """Record one category selection; never accepts prompts, identity, or workspace data."""
+    stamp = now()
+    with db() as conn:
+        exists = conn.execute("SELECT 1 FROM use_case_catalog WHERE slug=?", (item.slug,)).fetchone()
+        if not exists:
+            raise HTTPException(404, "Catalog entry not found")
+        conn.execute(
+            """INSERT INTO catalog_usage(slug,usage_count,last_used_at) VALUES (?,1,?)
+               ON CONFLICT(slug) DO UPDATE SET
+                 usage_count=usage_count+1,last_used_at=excluded.last_used_at""",
+            (item.slug, stamp)
+        )
+        count = conn.execute("SELECT usage_count FROM catalog_usage WHERE slug=?", (item.slug,)).fetchone()[0]
+    return {"recorded": True, "slug": item.slug, "usage_count": count}
+
 
 @app.get("/api/capabilities")
 def capabilities():
