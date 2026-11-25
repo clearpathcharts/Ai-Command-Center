@@ -23,3 +23,8 @@ jobs:
           node --check executive.js
       - name: Check Python syntax
         run: python -m compileall -q backend
+      - name: Install backend test dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run backend API tests
+        working-directory: backend
+        run: pytest -q tests
