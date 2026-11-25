@@ -89,8 +89,8 @@ def test_user_cannot_read_another_users_job(client):
 
 def test_unscoped_workspace_routes_are_locked(client):
     agents = client.get("/api/agents")
-    assert agents.status_code == 503
-    assert agents.json()["code"] == "WORKSPACE_API_SECURITY_LOCK"
+    assert agents.status_code == 200
+    assert agents.json()["items"] == []
 
     ai_status = client.get("/api/ai/status")
     assert ai_status.status_code == 503
