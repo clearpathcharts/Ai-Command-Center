@@ -122,5 +122,6 @@
   $("#export-data").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="ai-command-center-workspace.json";a.click();URL.revokeObjectURL(url);toast("Workspace export prepared.")});
   $("#voice-button").addEventListener("click",()=>{const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){toast("Voice input is not supported in this browser. You can still type your request.");return}const rec=new SpeechRecognition();rec.lang=navigator.language||"en-US";rec.interimResults=false;rec.onresult=e=>{$("#command-input").value+=($("#command-input").value?" ":"")+e.results[0][0].transcript;$("#command-input").focus()};rec.onerror=()=>toast("Voice input could not start. Please try typing instead.");rec.start()});
   $("#rescue-dialog").addEventListener("click",e=>{if(e.target===e.currentTarget)closeDialog("rescue-dialog")});
+  window.AICC={getState:()=>state,save,showView,toast,createTask};
   render();
 })();
