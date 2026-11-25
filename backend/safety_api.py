@@ -15,6 +15,7 @@ import hmac
 import os
 import re
 import sqlite3
+import tempfile
 import time
 import uuid
 from collections import defaultdict, deque
@@ -50,7 +51,9 @@ def classify(text: str) -> tuple[str, str]:
 
 
 def _db_path() -> Path:
-    return Path(os.getenv("SAFETY_DATABASE_PATH", str(Path(__file__).resolve().parent / "safety.db")))
+    # On Vercel only the temporary folder is writable (and it is not permanent).
+    folder = Path(tempfile.gettempdir()) if os.getenv("VERCEL") else Path(__file__).resolve().parent
+    return Path(os.getenv("SAFETY_DATABASE_PATH", str(folder / "safety.db")))
 
 
 def _connect() -> sqlite3.Connection:

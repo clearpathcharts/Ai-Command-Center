@@ -51,3 +51,16 @@ def test_report_rejects_bad_input(tmp_path, monkeypatch):
     with client(tmp_path, monkeypatch) as c:
         assert c.post("/api/safety/report", json={"device_id": "../../x", "text": "hi"}).status_code == 422
         assert c.post("/api/safety/report", json={"device_id": DEVICE, "text": ""}).status_code == 422
+
+
+def test_uses_writable_temp_folder_on_vercel(monkeypatch):
+    import importlib, tempfile
+    import safety_api
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.delenv("SAFETY_DATABASE_PATH", raising=False)
+    assert str(safety_api._db_path()).startswith(tempfile.gettempdir())
+    monkeypatch.delenv("DATABASE_PATH", raising=False)
+    reloaded = importlib.reload(main)
+    assert str(reloaded.DB_PATH).startswith(tempfile.gettempdir())
+    monkeypatch.delenv("VERCEL")
+    importlib.reload(main)

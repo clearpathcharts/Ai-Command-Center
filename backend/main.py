@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import tempfile
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,7 +21,10 @@ from auth import require_firebase_user, require_worker_token
 from safety_api import router as safety_router, SAFETY_PATHS
 
 APP_DIR = Path(__file__).resolve().parent
-DB_PATH = Path(os.getenv("DATABASE_PATH", str(APP_DIR / "workspace.db")))
+# Hosts like Vercel only allow writing to the temporary folder, so use it there.
+# Data in that folder is temporary and can disappear when the server restarts.
+WRITABLE_DIR = Path(tempfile.gettempdir()) if os.getenv("VERCEL") else APP_DIR
+DB_PATH = Path(os.getenv("DATABASE_PATH", str(WRITABLE_DIR / "workspace.db")))
 
 app = FastAPI(title="Accessible AI Command Center API", version="0.1.0")
 allowed_origins = [x.strip() for x in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",") if x.strip()]
