@@ -79,15 +79,15 @@ def init_db():
     with db() as conn:
         conn.executescript("""
         CREATE TABLE IF NOT EXISTS departments (
-          id TEXT PRIMARY KEY, name TEXT NOT NULL, purpose TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
+          id TEXT PRIMARY KEY, owner_uid TEXT NOT NULL, name TEXT NOT NULL, purpose TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
         );
         CREATE TABLE IF NOT EXISTS agents (
-          id TEXT PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL, department_id TEXT,
+          id TEXT PRIMARY KEY, owner_uid TEXT NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL, department_id TEXT,
           instructions TEXT NOT NULL DEFAULT '', permission_level TEXT NOT NULL DEFAULT 'approval',
           created_at TEXT NOT NULL, FOREIGN KEY(department_id) REFERENCES departments(id)
         );
         CREATE TABLE IF NOT EXISTS tasks (
-          id TEXT PRIMARY KEY, title TEXT NOT NULL, details TEXT NOT NULL DEFAULT '',
+          id TEXT PRIMARY KEY, owner_uid TEXT NOT NULL, title TEXT NOT NULL, details TEXT NOT NULL DEFAULT '',
           agent_id TEXT, priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'todo',
           created_at TEXT NOT NULL, FOREIGN KEY(agent_id) REFERENCES agents(id)
         );
@@ -109,10 +109,21 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_agent_jobs_owner_created ON agent_jobs(owner_uid, created_at DESC);
         CREATE INDEX IF NOT EXISTS idx_agent_jobs_status_created ON agent_jobs(status, created_at);
         CREATE TABLE IF NOT EXISTS approvals (
-          id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
+          id TEXT PRIMARY KEY, owner_uid TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
           agent_id TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL,
           reviewed_at TEXT, FOREIGN KEY(agent_id) REFERENCES agents(id)
         );
+        """)
+        # Safely upgrade existing SQLite workspaces while preserving legacy rows.
+        for table in ("departments", "agents", "tasks", "approvals"):
+            columns = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+            if "owner_uid" not in columns:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN owner_uid TEXT NOT NULL DEFAULT 'legacy-unassigned'")
+        conn.executescript("""
+        CREATE INDEX IF NOT EXISTS idx_departments_owner ON departments(owner_uid, created_at);
+        CREATE INDEX IF NOT EXISTS idx_agents_owner ON agents(owner_uid, created_at);
+        CREATE INDEX IF NOT EXISTS idx_tasks_owner ON tasks(owner_uid, created_at);
+        CREATE INDEX IF NOT EXISTS idx_approvals_owner ON approvals(owner_uid, created_at);
         """)
 init_db()
 
