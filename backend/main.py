@@ -31,34 +31,19 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-Worker-Token"],
 )
 
-# Fail closed for remaining endpoints that do not yet enforce per-user ownership.
+# This release is intentionally a single-user, browser-local application.
+# No cloud API is enabled: without accounts, a remote API cannot safely distinguish
+# the owner from another visitor. Keep all API routes closed until a local-only
+# runtime is implemented and bound to the user's own machine.
 @app.middleware("http")
-async def block_unscoped_workspace_routes(request, call_next):
+async def enforce_local_only_mode(request, call_next):
     path = request.url.path
-    safe = (
-        path == "/health"
-        or path == "/api/capabilities"
-        or path.startswith("/api/departments")
-        or path.startswith("/api/agents")
-        or path.startswith("/api/tasks")
-        or path.startswith("/api/approvals")
-        or path == "/api/brain/plan"
-        or path == "/api/ai/respond"
-        or path == "/api/ai/status"
-        or path == "/api/memory"
-        or path.startswith("/api/memory/")
-        or path == "/api/agent-messages"
-        or path == "/api/jobs"
-        or path.startswith("/api/jobs/")
-        or path == "/api/worker/claim"
-        or path == "/api/worker/complete"
-    )
-    if path.startswith("/api/") and not safe:
+    if path.startswith("/api/") and path != "/api/capabilities":
         return JSONResponse(
             status_code=503,
             content={
-                "detail": "This workspace API is temporarily disabled until per-user access controls are complete.",
-                "code": "WORKSPACE_API_SECURITY_LOCK"
+                "detail": "Cloud API is disabled. This release stores workspace data in this browser on this device.",
+                "code": "LOCAL_ONLY_MODE"
             }
         )
     return await call_next(request)
@@ -249,24 +234,15 @@ def review_approval(approval_id: str, decision: str, user=Depends(require_fireba
 @app.get("/api/capabilities")
 def capabilities():
     return {
-        "workspace_crud": True,
-        "persistent_storage": "sqlite",
+        "workspace_mode": "single-user-browser-local",
+        "cloud_api_enabled": False,
+        "accounts_required": False,
+        "persistent_storage": "browser localStorage",
+        "local_backup_restore": True,
         "live_model_execution": False,
-        "persistent_memory_api": True,
-        "agent_message_handoff_api": True,
-        "agent_planner": "deterministic starter only",
+        "background_workers": False,
         "web_research": False,
-        "background_workers": "worker implementation added; requires separate deployment and shared persistent database",
-        "authenticated_job_queue": True,
-        "worker_token_protection": True,
-        "legacy_workspace_routes_authenticated": True,
-        "authenticated_planner": True,
-        "authenticated_ai_gateway": True,
-        "authenticated_memory_api": True,
-        "authenticated_agent_message_api": True,
-        "authenticated_core_workspace_api": True,
-        "legacy_workspace_routes_disabled_for_safety": False,
-        "notice": "Departments, agents, tasks, approvals, memories, and agent messages are Firebase-authenticated and scoped to the verified user UID. The deterministic planner and model gateway require Firebase authentication; model execution remains dependent on server-side provider configuration."
+        "notice": "This release runs without accounts or cloud workspace storage. Agents, departments, tasks, approvals, workflows, and memory notes remain in this browser profile. Use the built-in JSON backup to move or protect your data."
     }
 
 
