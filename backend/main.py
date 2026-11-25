@@ -255,8 +255,8 @@ def capabilities():
         "authenticated_job_queue": True,
         "worker_token_protection": True,
         "legacy_workspace_routes_authenticated": False,
-        "legacy_workspace_routes_disabled_for_safety": True,
-        "notice": "Only health, capabilities, Firebase-authenticated jobs, and worker-token routes are available. Legacy workspace and AI routes are blocked until per-user authorization and ownership checks are implemented."
+        "legacy_workspace_routes_disabled_for_safety": True,\n        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
+        "notice": "Health, capabilities, Firebase-authenticated jobs, per-user Firebase-authenticated memory and agent-message routes, and worker-token routes are available. Other legacy workspace and AI routes remain blocked until per-user ownership checks are implemented."
     }
 
 
