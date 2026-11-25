@@ -12,9 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from auth import require_firebase_user, require_worker_token
 
 APP_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DATABASE_PATH", str(APP_DIR / "workspace.db")))
@@ -68,6 +69,14 @@ def init_db():
           task_id TEXT, message TEXT NOT NULL, message_type TEXT NOT NULL DEFAULT 'handoff',
           created_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS agent_jobs (
+          id TEXT PRIMARY KEY, owner_uid TEXT NOT NULL, agent_id TEXT, title TEXT NOT NULL,
+          instructions TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued', result TEXT NOT NULL DEFAULT '',
+          error TEXT NOT NULL DEFAULT '', attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL, started_at TEXT, completed_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_agent_jobs_owner_created ON agent_jobs(owner_uid, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_agent_jobs_status_created ON agent_jobs(status, created_at);
         CREATE TABLE IF NOT EXISTS approvals (
           id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
           agent_id TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL,
@@ -365,3 +374,58 @@ def ai_status():
         "model": os.getenv("AI_MODEL", "gpt-4.1-mini"),
         "note": "The API key is stored server-side and is never returned."
     }
+
+
+# Authenticated AI job queue. Model output is text only; no external tools/actions are exposed.
+class AgentJobIn(BaseModel):
+    id: str = Field(min_length=8, max_length=100)
+    agent_id: Optional[str] = Field(default=None, max_length=100)
+    title: str = Field(min_length=1, max_length=200)
+    instructions: str = Field(min_length=1, max_length=12000)
+
+@app.post("/api/jobs", status_code=202)
+def enqueue_agent_job(item: AgentJobIn, user=Depends(require_firebase_user)):
+    stamp = now()
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO agent_jobs (id,owner_uid,agent_id,title,instructions,status,created_at,updated_at) VALUES (?,?,?,?,?,'queued',?,?)",
+            (item.id, user["uid"], item.agent_id, item.title, item.instructions, stamp, stamp))
+    return {"id": item.id, "status": "queued", "created_at": stamp}
+
+@app.get("/api/jobs")
+def list_agent_jobs(limit: int = 50, user=Depends(require_firebase_user)):
+    limit = max(1, min(limit, 200))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id,agent_id,title,status,result,error,attempts,created_at,updated_at,started_at,completed_at FROM agent_jobs WHERE owner_uid=? ORDER BY created_at DESC LIMIT ?",
+            (user["uid"], limit)).fetchall()
+    return [dict(row) for row in rows]
+
+@app.post("/api/worker/claim")
+def claim_agent_job(_worker=Depends(require_worker_token)):
+    stamp = now()
+    with db() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute("SELECT * FROM agent_jobs WHERE status='queued' AND attempts < 3 ORDER BY created_at LIMIT 1").fetchone()
+        if not row:
+            return {"job": None}
+        conn.execute("UPDATE agent_jobs SET status='running', attempts=attempts+1, started_at=?, updated_at=? WHERE id=? AND status='queued'",
+                     (stamp, stamp, row["id"]))
+        claimed = conn.execute("SELECT * FROM agent_jobs WHERE id=?", (row["id"],)).fetchone()
+    return {"job": dict(claimed)}
+
+class AgentJobCompletion(BaseModel):
+    id: str = Field(min_length=8, max_length=100)
+    result: str = Field(default="", max_length=30000)
+    error: str = Field(default="", max_length=3000)
+
+@app.post("/api/worker/complete")
+def complete_agent_job(item: AgentJobCompletion, _worker=Depends(require_worker_token)):
+    stamp = now()
+    status = "failed" if item.error else "completed"
+    with db() as conn:
+        result = conn.execute("UPDATE agent_jobs SET status=?, result=?, error=?, updated_at=?, completed_at=? WHERE id=? AND status='running'",
+                              (status, item.result, item.error, stamp, stamp, item.id))
+        if result.rowcount == 0:
+            raise HTTPException(404, "Active job not found")
+    return {"id": item.id, "status": status}
