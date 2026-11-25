@@ -117,6 +117,10 @@
           <div class="brain-hero">
             <div class="brain-orb">✧</div><div><div class="eyebrow">EXECUTIVE MEMORY & AGENT BUILDER</div><h2>You don't have to remember everything.</h2><p>Your workspace keeps a searchable record of your agents, their jobs, projects, and notes.</p></div>
           </div>
+          <section class="panel resume-panel">
+            <div class="panel-heading"><div><div class="eyebrow">YOUR PERSONAL WORK HISTORY</div><h2>What was I doing?</h2><p>Get a simple recap of unfinished work, recent projects, and saved notes.</p></div><button class="primary-button" id="brain-resume">↻ Pick up where I left off</button></div>
+            <div id="resume-summary" class="resume-summary" aria-live="polite"><div class="resume-placeholder">Your work summary will appear here. You can come back anytime and ask the Brain to help you restart.</div></div>
+          </section>
           <div class="brain-grid">
             <section class="panel brain-panel"><div class="panel-heading"><div><h2>Tell the brain what you need</h2><p>It checks your existing workforce before suggesting new agents.</p></div></div>
               <label class="brain-label" for="brain-request">What would you like your AI workforce to do?</label>
@@ -128,7 +132,7 @@
               <label class="brain-label" for="brain-search">Search agents, jobs, projects, and notes</label>
               <input id="brain-search" class="brain-search" placeholder="Try: paperwork, appointments, marketing...">
               <div id="brain-search-results" class="brain-results"></div>
-              <div class="memory-entry"><label class="brain-label" for="memory-note">Save a memory or instruction</label><textarea id="memory-note" rows="2" placeholder="Remember that this agent helps me organize..."></textarea><button class="secondary-button" id="memory-save">Save to my memory</button></div>
+              <div class="memory-entry"><label class="brain-label" for="memory-note">Save a memory or instruction</label><select id="memory-category" class="brain-search" aria-label="Memory category"><option value="personal">Personal preference</option><option value="project">Project</option><option value="instruction">Important instruction</option><option value="reminder">Reminder</option><option value="agent">Agent information</option></select><textarea id="memory-note" rows="2" placeholder="Remember that this agent helps me organize..."></textarea><button class="secondary-button" id="memory-save">Save to my memory</button></div>
               <div id="memory-list" class="memory-list"></div>
             </section>
           </div>
