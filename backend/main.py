@@ -31,8 +31,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "X-Worker-Token"],
 )
 
-# Fail closed: legacy shared-workspace endpoints lack per-user ownership checks.
-# Keep them unavailable rather than risk cross-account data exposure.
+# Fail closed for remaining endpoints that do not yet enforce per-user ownership.
 @app.middleware("http")
 async def block_unscoped_workspace_routes(request, call_next):
     path = request.url.path
@@ -258,8 +257,11 @@ def capabilities():
         "authenticated_job_queue": True,
         "worker_token_protection": True,
         "legacy_workspace_routes_authenticated": True,
-        "legacy_workspace_routes_disabled_for_safety": False,\n        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
-        "notice": "Health, capabilities, Firebase-authenticated jobs, per-user Firebase-authenticated memory and agent-message routes, and worker-token routes are available. Other legacy workspace and AI routes remain blocked until per-user ownership checks are implemented."
+        "legacy_workspace_routes_disabled_for_safety": False,
+        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
+        "authenticated_core_workspace_api": True,
+        "legacy_workspace_routes_disabled_for_safety": False,
+        "notice": "Departments, agents, tasks, approvals, memories, and agent messages are Firebase-authenticated and scoped to the verified user UID. Planner and model-gateway routes remain locked pending their own ownership and authentication controls."
     }
 
 
