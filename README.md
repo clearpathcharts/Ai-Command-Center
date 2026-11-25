@@ -32,3 +32,9 @@ Agents may prepare research, drafts, and recommendations within granted permissi
 - Show task status, ownership, outputs, and approval requirements.
 - Keep provider integrations replaceable.
 - Use least-privilege access and auditable actions.
+
+## Team Workflow Builder (current milestone)
+
+The frontend includes a template-based workflow planner for general projects, research, business planning, marketing, and software projects. It turns an objective into reviewable task steps and assigns them to matching department agents where possible. Progress is derived from task status.
+
+This is a deterministic planning scaffold, not autonomous AI execution. No agent model calls or external actions are made. Human review remains required. Workflow data currently lives in browser local storage; multi-user persistence and authenticated orchestration remain future work.
