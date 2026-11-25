@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from auth import require_firebase_user, require_worker_token
+from safety_api import router as safety_router, SAFETY_PATHS
 
 APP_DIR = Path(__file__).resolve().parent
 DB_PATH = Path(os.getenv("DATABASE_PATH", str(APP_DIR / "workspace.db")))
@@ -28,7 +29,7 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "Authorization", "X-Worker-Token"],
+    allow_headers=["Content-Type", "Authorization", "X-Worker-Token", "X-Admin-Token"],
 )
 
 # This release is intentionally a single-user, browser-local application.
@@ -39,7 +40,7 @@ app.add_middleware(
 async def enforce_local_only_mode(request, call_next):
     path = request.url.path
     public_catalog_routes = path in {"/api/catalog", "/api/catalog/categories", "/api/catalog/usage"} or path.startswith("/api/catalog/")
-    if path.startswith("/api/") and path != "/api/capabilities" and not public_catalog_routes:
+    if path.startswith("/api/") and path != "/api/capabilities" and not public_catalog_routes and path not in SAFETY_PATHS:
         return JSONResponse(
             status_code=503,
             content={
@@ -199,6 +200,8 @@ class ApprovalIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     description: str = Field(default="", max_length=3000)
     agent_id: Optional[str] = None
+
+app.include_router(safety_router)
 
 @app.get("/health")
 def health():

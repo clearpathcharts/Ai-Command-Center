@@ -17,10 +17,7 @@ jobs:
           python-version: "3.12"
       - name: Check frontend JavaScript syntax
         run: |
-          node --check app.js
-          node --check brain.js
-          node --check memory.js
-          node --check executive.js
+          for f in *.js tests/*.js; do node --check "$f"; done
       - name: Check Python syntax
         run: python -m compileall -q backend
       - name: Install backend test dependencies
@@ -28,3 +25,9 @@ jobs:
       - name: Run backend API tests
         working-directory: backend
         run: pytest -q tests
+      - name: Install browser for UI test
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+      - name: Click through every feature in a real browser
+        run: node tests/ui-smoke.js

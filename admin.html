@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Safety Review</title>
+  <style>
+    :root{--bg:#000;--surface:#0b0b12;--line:#2a2a3a;--text:#f4f4ff;--muted:#a9a9c2;--pink:#FF1493;--cyan:#00FFFF;--purple:#B026FF;--blue:#00A8FF;--orange:#FF7B00;--lime:#39FF14;--grad:linear-gradient(90deg,#FF1493,#B026FF,#00FFFF)}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+    header{padding:20px 16px;border-bottom:3px solid;border-image:var(--grad) 1}h1{margin:0;font-size:26px}h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+    main{max-width:1100px;margin:0 auto;padding:20px 16px}
+    .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+    label{display:block;font-weight:700;margin:10px 0 6px}input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#11111b;color:var(--text);font:inherit}
+    button{font:inherit;font-weight:700;padding:12px 18px;border-radius:10px;border:0;cursor:pointer;background:linear-gradient(90deg,#00A8FF,#00FFFF);color:#000;margin-top:12px}
+    button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.stat strong{display:block;font-size:30px}.stat small{color:var(--muted)}
+    .row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:180px}
+    .entry{border:1px solid var(--line);border-left:6px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;background:#0e0e18}
+    .entry.urgent{border-left-color:var(--pink)}.entry.review{border-left-color:var(--orange)}.entry.low{border-left-color:var(--lime)}
+    .entry p{margin:6px 0;white-space:pre-wrap;word-break:break-word}.entry small{color:var(--muted)}
+    .badge{font-weight:800;font-size:13px;padding:3px 10px;border-radius:20px;background:#222}.urgent .badge{background:var(--pink);color:#000}.review .badge{background:var(--orange);color:#000}.low .badge{background:var(--lime);color:#000}
+    .msg{padding:12px;border-radius:10px;background:#1a1020;border:1px solid var(--purple)}
+    .linkish{background:none;color:var(--cyan);padding:0;margin:0;text-decoration:underline}
+  </style>
+</head>
+<body>
+  <header><h1><span>Safety Review</span> — site owner only</h1></header>
+  <main>
+    <section class="card" id="login-card">
+      <p>This page shows the safety catalog from everyone who uses the site. No names are collected — each person's device has a random number instead.</p>
+      <label for="server">Step 1 — Your server address</label>
+      <input id="server" placeholder="https://safety.yourdomain.com" autocomplete="off">
+      <label for="token">Step 2 — Your admin key (the SAFETY_ADMIN_TOKEN you set on the server)</label>
+      <input id="token" type="password" autocomplete="off">
+      <button id="connect">Step 3 — Show reports</button>
+      <p><small>The key is kept only while this tab is open. It is not saved.</small></p>
+    </section>
+    <div id="message"></div>
+    <section class="card" id="report-card" hidden>
+      <div class="stats">
+        <div class="stat"><strong id="t-urgent">0</strong><small>Urgent review</small></div>
+        <div class="stat"><strong id="t-review">0</strong><small>Needs review</small></div>
+        <div class="stat"><strong id="t-low">0</strong><small>Lower concern</small></div>
+        <div class="stat"><strong id="t-devices">0</strong><small>Different devices</small></div>
+      </div>
+      <div class="row">
+        <div><label for="level">Show</label><select id="level"><option value="">Everything</option><option value="urgent">Urgent only</option><option value="review">Needs review only</option><option value="low">Lower concern only</option></select></div>
+        <div><label for="q">Search words</label><input id="q" type="search"></div>
+      </div>
+      <p id="device-filter" hidden>Showing one device only. <button class="linkish" id="clear-device">Show all devices</button></p>
+      <button id="refresh">Refresh now</button>
+      <p><small>Refreshes by itself every minute.</small></p>
+      <div id="list" aria-live="polite"></div>
+    </section>
+  </main>
+  <script>
+  (() => {
+    "use strict";
+    const $ = s => document.querySelector(s);
+    let token = "", base = "", device = "";
+    try { base = localStorage.getItem("aicc-admin-server") || ""; } catch {}
+    $("#server").value = base;
+    const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    const say = m => { $("#message").innerHTML = m ? '<p class="msg">' + esc(m) + '</p>' : ""; };
+    async function load(){
+      const params = new URLSearchParams({limit:"300"});
+      if ($("#level").value) params.set("level", $("#level").value);
+      if ($("#q").value.trim()) params.set("q", $("#q").value.trim());
+      if (device) params.set("device_id", device);
+      try {
+        const res = await fetch(base + "/api/admin/safety?" + params, {headers:{"X-Admin-Token":token}});
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { say(data.detail || ("The server answered with error " + res.status + ".")); return; }
+        say("");
+        $("#login-card").hidden = true; $("#report-card").hidden = false;
+        $("#t-urgent").textContent = data.totals.urgent; $("#t-review").textContent = data.totals.review; $("#t-low").textContent = data.totals.low; $("#t-devices").textContent = data.devices;
+        $("#device-filter").hidden = !device;
+        $("#list").innerHTML = data.items.map(i => '<article class="entry ' + esc(i.level) + '"><span class="badge">' + esc(i.level.toUpperCase()) + '</span> <small>' + new Date(i.received_at).toLocaleString() + ' · typed in: ' + esc(i.source) + '</small><p>' + esc(i.text) + '</p><small>' + esc(i.reason) + ' · Device: <button class="linkish" data-device="' + esc(i.device_id) + '">' + esc(i.device_id.slice(0, 18)) + '…</button> (show everything from this device)</small></article>').join("") || "<p>No reports match.</p>";
+      } catch { say("Could not reach the server. Check the address, and that the server allows this page's address in CORS_ORIGINS."); }
+    }
+    $("#connect").addEventListener("click", () => {
+      base = $("#server").value.trim().replace(/\/+$/, ""); token = $("#token").value;
+      if (!base || !token) { say("Please fill in both boxes."); return; }
+      try { localStorage.setItem("aicc-admin-server", base); } catch {}
+      load();
+    });
+    $("#refresh").addEventListener("click", load);
+    $("#level").addEventListener("change", load);
+    $("#q").addEventListener("change", load);
+    $("#clear-device").addEventListener("click", () => { device = ""; load(); });
+    $("#list").addEventListener("click", e => { const b = e.target.closest("[data-device]"); if (b) { device = b.dataset.device; load(); } });
+    setInterval(() => { if (token) load(); }, 60000);
+  })();
+  </script>
+</body>
+</html>

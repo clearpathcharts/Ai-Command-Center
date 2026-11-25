@@ -1,0 +1,53 @@
+from pathlib import Path
+import sys
+
+from fastapi.testclient import TestClient
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import main
+
+DEVICE = "device-test-123"
+
+
+def client(tmp_path, monkeypatch, token="a-very-long-admin-key-123"):
+    monkeypatch.setenv("SAFETY_DATABASE_PATH", str(tmp_path / "safety.db"))
+    if token is None:
+        monkeypatch.delenv("SAFETY_ADMIN_TOKEN", raising=False)
+    else:
+        monkeypatch.setenv("SAFETY_ADMIN_TOKEN", token)
+    return TestClient(main.app)
+
+
+def test_report_is_accepted_without_login_and_rescreened_by_server(tmp_path, monkeypatch):
+    with client(tmp_path, monkeypatch) as c:
+        r = c.post("/api/safety/report", json={"device_id": DEVICE, "text": "I want to end my life", "source": "Rescue Mode"})
+        assert r.status_code == 202
+        assert r.json() == {"recorded": True, "level": "urgent"}
+        r = c.post("/api/safety/report", json={"device_id": DEVICE, "text": "help me pay my phone bill"})
+        assert r.json()["level"] == "low"
+
+
+def test_admin_requires_correct_key(tmp_path, monkeypatch):
+    with client(tmp_path, monkeypatch) as c:
+        c.post("/api/safety/report", json={"device_id": DEVICE, "text": "someone is stalking me"})
+        assert c.get("/api/admin/safety").status_code == 401
+        assert c.get("/api/admin/safety", headers={"X-Admin-Token": "wrong-key-wrong-key"}).status_code == 401
+        ok = c.get("/api/admin/safety", headers={"X-Admin-Token": "a-very-long-admin-key-123"})
+        assert ok.status_code == 200
+        body = ok.json()
+        assert body["totals"]["review"] == 1
+        assert body["devices"] == 1
+        assert body["items"][0]["text"] == "someone is stalking me"
+        filtered = c.get("/api/admin/safety", params={"level": "urgent"}, headers={"X-Admin-Token": "a-very-long-admin-key-123"})
+        assert filtered.json()["items"] == []
+
+
+def test_admin_closed_when_key_not_configured(tmp_path, monkeypatch):
+    with client(tmp_path, monkeypatch, token=None) as c:
+        assert c.get("/api/admin/safety", headers={"X-Admin-Token": "anything-at-all-here"}).status_code == 503
+
+
+def test_report_rejects_bad_input(tmp_path, monkeypatch):
+    with client(tmp_path, monkeypatch) as c:
+        assert c.post("/api/safety/report", json={"device_id": "../../x", "text": "hi"}).status_code == 422
+        assert c.post("/api/safety/report", json={"device_id": DEVICE, "text": ""}).status_code == 422
