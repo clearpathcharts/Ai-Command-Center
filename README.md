@@ -100,3 +100,10 @@ Separate worker process:
 ### Production deployment warning
 
 This repository still uses SQLite by default. A separate worker and API instance must share a durable database; do not deploy the SQLite queue across separate ephemeral containers and expect reliable coordination. Move the queue and workspace data to managed PostgreSQL before production multi-instance use. The frontend does not yet include Firebase sign-in/token wiring for submitting jobs, and legacy workspace CRUD endpoints are not all user-authenticated. Do not expose private workspace data publicly until those routes are secured.
+
+
+## Workspace backup and restore
+
+The browser workspace now supports portable JSON backups. Open **Accessibility & Settings → Data on this device** to download a backup or restore one. A backup contains agents, departments, tasks, approvals, workflows, and display preferences. Restore validates the file and asks before replacing the current browser workspace. Keep backups in a private, secure location: they may contain sensitive notes or business information.
+
+Browser storage is still device-local. A downloaded backup is the user's recovery copy; it is not cloud synchronization. Do not treat a successful browser save as proof that data has been synced to a server.
