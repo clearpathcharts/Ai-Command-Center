@@ -20,6 +20,7 @@
       <nav aria-label="Main navigation">
         <button class="nav-link active" data-view="overview"><span>⌂</span> Overview</button>
         <button class="nav-link" data-view="agents"><span>◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
+        <button class="nav-link" data-view="brain"><span>✧</span> Agent Creator Brain</button>
         <button class="nav-link" data-view="departments"><span>▦</span> Departments</button>
         <button class="nav-link" data-view="tasks"><span>☷</span> Tasks & Projects</button>
         <button class="nav-link" data-view="workflows"><span>⤳</span> Team Workflows</button>
@@ -111,6 +112,28 @@
           <div class="notice-box">This release provides task organization only. It does not yet browse the web, verify claims automatically, or make fraud determinations.</div>
         </section>
 
+        <section class="view" id="view-brain">
+          <div class="page-heading"><div><div class="eyebrow">YOUR WORKFORCE REMEMBERS</div><h1>Agent Creator Brain</h1><p>Describe what you need in everyday language. Find agents you already created, build new specialists, and save important memories.</p></div></div>
+          <div class="brain-hero">
+            <div class="brain-orb">✧</div><div><div class="eyebrow">EXECUTIVE MEMORY & AGENT BUILDER</div><h2>You don't have to remember everything.</h2><p>Your workspace keeps a searchable record of your agents, their jobs, projects, and notes.</p></div>
+          </div>
+          <div class="brain-grid">
+            <section class="panel brain-panel"><div class="panel-heading"><div><h2>Tell the brain what you need</h2><p>It checks your existing workforce before suggesting new agents.</p></div></div>
+              <label class="brain-label" for="brain-request">What would you like your AI workforce to do?</label>
+              <textarea id="brain-request" rows="4" placeholder="Example: I need help managing my appointments, organizing medical paperwork, and remembering important deadlines."></textarea>
+              <div class="brain-actions"><button class="primary-button" id="brain-analyze">✧ Build my team</button><button class="quiet-button" id="brain-voice">🎙 Speak request</button></div>
+              <div id="brain-plan" class="brain-plan" aria-live="polite"></div>
+            </section>
+            <section class="panel brain-panel"><div class="panel-heading"><div><h2>Workforce memory</h2><p>Search for agents and information you may have forgotten.</p></div></div>
+              <label class="brain-label" for="brain-search">Search agents, jobs, projects, and notes</label>
+              <input id="brain-search" class="brain-search" placeholder="Try: paperwork, appointments, marketing...">
+              <div id="brain-search-results" class="brain-results"></div>
+              <div class="memory-entry"><label class="brain-label" for="memory-note">Save a memory or instruction</label><textarea id="memory-note" rows="2" placeholder="Remember that this agent helps me organize..."></textarea><button class="secondary-button" id="memory-save">Save to my memory</button></div>
+              <div id="memory-list" class="memory-list"></div>
+            </section>
+          </div>
+          <div class="brain-footnote"><strong>Designed for memory support:</strong> Agent names, responsibilities, and notes are searchable. This first release saves data in this browser. Cross-device cloud memory will be enabled when secure accounts and the production database are connected.</div>
+        </section>
         <section class="view" id="view-settings">
           <div class="page-heading"><div><div class="eyebrow">BUILT AROUND YOU</div><h1>Accessibility & settings</h1><p>Adjust the workspace to reduce friction and make work easier to follow.</p></div></div>
           <div class="settings-grid">
@@ -171,5 +194,6 @@
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="./app.js" defer></script>
+  <script src="./brain.js" defer></script>
 </body>
 </html>
