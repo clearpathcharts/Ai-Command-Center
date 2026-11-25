@@ -144,3 +144,9 @@ Departments, agents, tasks, and approvals now require Firebase authentication. E
 SQLite startup performs a non-destructive schema migration that adds `owner_uid` to existing core workspace tables. Historical rows are retained under the `legacy-unassigned` owner and are not exposed to signed-in users. New records are always assigned to the authenticated UID.
 
 Automated tests cover cross-user reads, cross-user updates, invalid cross-account relationships, and unauthenticated access. The deterministic planner and model gateway remain locked until their own user-scoped behavior is implemented.
+
+### Planner and model gateway access
+
+The deterministic planner, AI response gateway, and AI configuration-status endpoint now require a verified Firebase ID token. The planner ignores the caller-supplied workspace identifier and only checks existing agents belonging to the authenticated UID. The model provider key remains server-side; model execution still requires the backend environment to be configured with the provider credentials.
+
+Tests cover planner authentication, verified workspace identity, and authentication on AI gateway/status routes.
