@@ -14,7 +14,7 @@
     {id:"agent-research",name:"Research Specialist",role:"Research and source review",department:"research",instructions:"Prepare research plans, organize source links, and summarize evidence without inventing facts.",permission:"prepare"},
     {id:"agent-organizer",name:"Organization Assistant",role:"Documents and planning",department:"admin",instructions:"Turn complex work into clear, small steps and organize the user's task list.",permission:"prepare"}
   ];
-  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],workflows:[],settings:{largeText:false,highContrast:false,reduceMotion:false,simpleMode:false}};
+  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],settings:{largeText:false,highContrast:false,reduceMotion:false,simpleMode:false}};
   let state = loadState();
   let activeTaskFilter = "all";
   let toastTimer;
