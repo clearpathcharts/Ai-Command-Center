@@ -39,6 +39,10 @@ async def block_unscoped_workspace_routes(request, call_next):
     safe = (
         path == "/health"
         or path == "/api/capabilities"
+        or path.startswith("/api/departments")
+        or path.startswith("/api/agents")
+        or path.startswith("/api/tasks")
+        or path.startswith("/api/approvals")
         or path == "/api/memory"
         or path.startswith("/api/memory/")
         or path == "/api/agent-messages"
@@ -146,100 +150,88 @@ def health():
     return {"status": "ok", "service": "accessible-ai-command-center-api", "time": now()}
 
 @app.get("/api/departments")
-def list_departments():
+def list_departments(user=Depends(require_firebase_user)):
     with db() as conn:
-        return [dict(r) for r in conn.execute("SELECT * FROM departments ORDER BY created_at")]
+        return [dict(r) for r in conn.execute("SELECT id,name,purpose,created_at FROM departments WHERE owner_uid=? ORDER BY created_at", (user["uid"],))]
 
 @app.post("/api/departments", status_code=201)
-def create_department(item: DepartmentIn):
+def create_department(item: DepartmentIn, user=Depends(require_firebase_user)):
     with db() as conn:
         try:
-            conn.execute("INSERT INTO departments VALUES (?,?,?,?)", (item.id, item.name, item.purpose, now()))
+            conn.execute("INSERT INTO departments (id,owner_uid,name,purpose,created_at) VALUES (?,?,?,?,?)", (item.id,user["uid"],item.name,item.purpose,now()))
         except sqlite3.IntegrityError:
             raise HTTPException(409, "Department ID already exists")
     return item.model_dump()
 
 @app.get("/api/agents")
-def list_agents(q: str = "", limit: int = 100, offset: int = 0):
-    """Paginated agent directory: store many agents without loading the entire workforce."""
-    limit, offset = max(1, min(limit, 500)), max(0, offset)
+def list_agents(q: str = "", limit: int = 100, offset: int = 0, user=Depends(require_firebase_user)):
+    limit, offset = max(1,min(limit,500)), max(0,offset)
+    pattern=f"%{q}%"
     with db() as conn:
-        rows = conn.execute(
-            """SELECT * FROM agents WHERE (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?)
-               ORDER BY created_at DESC LIMIT ? OFFSET ?""",
-            (q, f"%{q}%", f"%{q}%", f"%{q}%", limit, offset)).fetchall()
-        total = conn.execute(
-            "SELECT COUNT(*) FROM agents WHERE (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?)",
-            (q, f"%{q}%", f"%{q}%", f"%{q}%")).fetchone()[0]
-        return {"items": [dict(r) for r in rows], "total": total, "limit": limit, "offset": offset}
+        rows=conn.execute("SELECT id,name,role,department_id,instructions,permission_level,created_at FROM agents WHERE owner_uid=? AND (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?",(user["uid"],q,pattern,pattern,pattern,limit,offset)).fetchall()
+        total=conn.execute("SELECT COUNT(*) FROM agents WHERE owner_uid=? AND (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?)",(user["uid"],q,pattern,pattern,pattern)).fetchone()[0]
+    return {"items":[dict(r) for r in rows],"total":total,"limit":limit,"offset":offset}
 
 @app.post("/api/agents", status_code=201)
-def create_agent(item: AgentIn):
+def create_agent(item: AgentIn, user=Depends(require_firebase_user)):
     with db() as conn:
+        if item.department_id and not conn.execute("SELECT 1 FROM departments WHERE id=? AND owner_uid=?",(item.department_id,user["uid"])).fetchone():
+            raise HTTPException(404,"Department not found")
         try:
-            conn.execute(
-                "INSERT INTO agents VALUES (?,?,?,?,?,?,?)",
-                (item.id, item.name, item.role, item.department_id, item.instructions, item.permission_level, now()),
-            )
+            conn.execute("INSERT INTO agents (id,owner_uid,name,role,department_id,instructions,permission_level,created_at) VALUES (?,?,?,?,?,?,?,?)",(item.id,user["uid"],item.name,item.role,item.department_id,item.instructions,item.permission_level,now()))
         except sqlite3.IntegrityError:
-            raise HTTPException(409, "Agent ID already exists or department is invalid")
+            raise HTTPException(409,"Agent ID already exists")
     return item.model_dump()
 
 @app.get("/api/tasks")
-def list_tasks():
+def list_tasks(user=Depends(require_firebase_user)):
     with db() as conn:
-        return [dict(r) for r in conn.execute("SELECT * FROM tasks ORDER BY created_at DESC")]
+        return [dict(r) for r in conn.execute("SELECT id,title,details,agent_id,priority,status,created_at FROM tasks WHERE owner_uid=? ORDER BY created_at DESC",(user["uid"],))]
 
 @app.post("/api/tasks", status_code=201)
-def create_task(item: TaskIn):
+def create_task(item: TaskIn, user=Depends(require_firebase_user)):
     with db() as conn:
+        if item.agent_id and not conn.execute("SELECT 1 FROM agents WHERE id=? AND owner_uid=?",(item.agent_id,user["uid"])).fetchone():
+            raise HTTPException(404,"Agent not found")
         try:
-            conn.execute(
-                "INSERT INTO tasks VALUES (?,?,?,?,?,?,?)",
-                (item.id, item.title, item.details, item.agent_id, item.priority, "todo", now()),
-            )
+            conn.execute("INSERT INTO tasks (id,owner_uid,title,details,agent_id,priority,status,created_at) VALUES (?,?,?,?,?,?,?,?)",(item.id,user["uid"],item.title,item.details,item.agent_id,item.priority,"todo",now()))
         except sqlite3.IntegrityError:
-            raise HTTPException(409, "Task ID already exists or assigned agent is invalid")
-    return {**item.model_dump(), "status": "todo"}
+            raise HTTPException(409,"Task ID already exists")
+    return {**item.model_dump(),"status":"todo"}
 
 @app.patch("/api/tasks/{task_id}")
-def update_task(task_id: str, item: TaskStatusIn):
+def update_task(task_id: str, item: TaskStatusIn, user=Depends(require_firebase_user)):
     with db() as conn:
-        result = conn.execute("UPDATE tasks SET status=? WHERE id=?", (item.status, task_id))
-        if result.rowcount == 0:
-            raise HTTPException(404, "Task not found")
-        row = conn.execute("SELECT * FROM tasks WHERE id=?", (task_id,)).fetchone()
-        return dict(row)
+        result=conn.execute("UPDATE tasks SET status=? WHERE id=? AND owner_uid=?",(item.status,task_id,user["uid"]))
+        if result.rowcount==0:
+            raise HTTPException(404,"Task not found")
+        return dict(conn.execute("SELECT id,title,details,agent_id,priority,status,created_at FROM tasks WHERE id=? AND owner_uid=?",(task_id,user["uid"])).fetchone())
 
 @app.get("/api/approvals")
-def list_approvals():
+def list_approvals(user=Depends(require_firebase_user)):
     with db() as conn:
-        return [dict(r) for r in conn.execute("SELECT * FROM approvals ORDER BY created_at DESC")]
+        return [dict(r) for r in conn.execute("SELECT id,title,description,agent_id,status,created_at,reviewed_at FROM approvals WHERE owner_uid=? ORDER BY created_at DESC",(user["uid"],))]
 
 @app.post("/api/approvals", status_code=201)
-def create_approval(item: ApprovalIn):
+def create_approval(item: ApprovalIn, user=Depends(require_firebase_user)):
     with db() as conn:
+        if item.agent_id and not conn.execute("SELECT 1 FROM agents WHERE id=? AND owner_uid=?",(item.agent_id,user["uid"])).fetchone():
+            raise HTTPException(404,"Agent not found")
         try:
-            conn.execute(
-                "INSERT INTO approvals VALUES (?,?,?,?,?,?,?)",
-                (item.id, item.title, item.description, item.agent_id, "pending", now(), None),
-            )
+            conn.execute("INSERT INTO approvals (id,owner_uid,title,description,agent_id,status,created_at,reviewed_at) VALUES (?,?,?,?,?,'pending',?,NULL)",(item.id,user["uid"],item.title,item.description,item.agent_id,now()))
         except sqlite3.IntegrityError:
-            raise HTTPException(409, "Approval ID already exists or assigned agent is invalid")
-    return {**item.model_dump(), "status": "pending"}
+            raise HTTPException(409,"Approval ID already exists")
+    return {**item.model_dump(),"status":"pending"}
 
 @app.patch("/api/approvals/{approval_id}")
-def review_approval(approval_id: str, decision: str):
-    if decision not in {"approved", "rejected"}:
-        raise HTTPException(422, "Decision must be approved or rejected")
+def review_approval(approval_id: str, decision: str, user=Depends(require_firebase_user)):
+    if decision not in {"approved","rejected"}:
+        raise HTTPException(422,"Decision must be approved or rejected")
     with db() as conn:
-        result = conn.execute(
-            "UPDATE approvals SET status=?, reviewed_at=? WHERE id=? AND status='pending'",
-            (decision, now(), approval_id),
-        )
-        if result.rowcount == 0:
-            raise HTTPException(404, "Pending approval not found")
-        return dict(conn.execute("SELECT * FROM approvals WHERE id=?", (approval_id,)).fetchone())
+        result=conn.execute("UPDATE approvals SET status=?,reviewed_at=? WHERE id=? AND owner_uid=? AND status='pending'",(decision,now(),approval_id,user["uid"]))
+        if result.rowcount==0:
+            raise HTTPException(404,"Pending approval not found")
+        return dict(conn.execute("SELECT id,title,description,agent_id,status,created_at,reviewed_at FROM approvals WHERE id=? AND owner_uid=?",(approval_id,user["uid"])).fetchone())
 
 @app.get("/api/capabilities")
 def capabilities():
@@ -254,8 +246,8 @@ def capabilities():
         "background_workers": "worker implementation added; requires separate deployment and shared persistent database",
         "authenticated_job_queue": True,
         "worker_token_protection": True,
-        "legacy_workspace_routes_authenticated": False,
-        "legacy_workspace_routes_disabled_for_safety": True,\n        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
+        "legacy_workspace_routes_authenticated": True,
+        "legacy_workspace_routes_disabled_for_safety": False,\n        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
         "notice": "Health, capabilities, Firebase-authenticated jobs, per-user Firebase-authenticated memory and agent-message routes, and worker-token routes are available. Other legacy workspace and AI routes remain blocked until per-user ownership checks are implemented."
     }
 
