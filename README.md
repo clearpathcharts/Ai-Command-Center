@@ -68,3 +68,35 @@ backend/auth.py contains a Firebase ID-token verification helper. It must be app
 - Agent message endpoints store handoff messages; autonomous workers that execute and respond are not yet deployed.
 - Browser speech input/output depends on device and browser support.
 - SQLite is suitable for local development, not horizontally scaled production storage. Use managed PostgreSQL for production.
+
+
+## AI execution queue (new)
+
+The backend now includes an authenticated job queue:
+
+- `POST /api/jobs` accepts a job only when a valid Firebase ID token is supplied.
+- `GET /api/jobs` returns only jobs owned by the signed-in Firebase UID.
+- `POST /api/worker/claim` and `POST /api/worker/complete` require the separate `WORKER_SHARED_SECRET`.
+- `backend/worker.py` is a separate polling worker. It sends job instructions to the configured OpenAI-compatible model endpoint and stores a text result for review.
+- The worker is deliberately text-only. It has no browser, shell, email, payment, publishing, or other action tools.
+
+### Required server environment
+
+Backend:
+- `AI_API_KEY`
+- `AI_BASE_URL` (optional; default OpenAI-compatible endpoint)
+- `AI_MODEL`
+- `WORKER_SHARED_SECRET` (long random secret)
+- Firebase Admin credentials through `GOOGLE_APPLICATION_CREDENTIALS` or hosting-platform Application Default Credentials
+- `DATABASE_PATH` only for local SQLite development
+
+Separate worker process:
+- `COMMAND_CENTER_API_URL`
+- `WORKER_SHARED_SECRET` (same secret as backend)
+- `AI_API_KEY`
+- `AI_BASE_URL`
+- `AI_MODEL`
+
+### Production deployment warning
+
+This repository still uses SQLite by default. A separate worker and API instance must share a durable database; do not deploy the SQLite queue across separate ephemeral containers and expect reliable coordination. Move the queue and workspace data to managed PostgreSQL before production multi-instance use. The frontend does not yet include Firebase sign-in/token wiring for submitting jobs, and legacy workspace CRUD endpoints are not all user-authenticated. Do not expose private workspace data publicly until those routes are secured.
