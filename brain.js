@@ -31,5 +31,14 @@
   $("#brain-search")?.addEventListener("input",e=>renderMemories(e.target.value));
   $("#memory-save")?.addEventListener("click",()=>{const text=$("#memory-note").value.trim();if(!text){notify("Write a memory first.");return}const list=memories();list.push({id:id("memory"),text,createdAt:new Date().toISOString()});write(MEMORY_KEY,list);$("#memory-note").value="";renderMemories($("#brain-search").value);notify("Memory saved on this device.")});
   $("#brain-voice")?.addEventListener("click",()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){notify("Voice dictation is not available in this browser.");return}const r=new SR();r.lang=navigator.language||"en-US";r.onresult=e=>{$("#brain-request").value+=($("#brain-request").value?" ":"")+e.results[0][0].transcript};r.onerror=()=>notify("Voice input did not start. Try typing instead.");r.start()});
+
+  $("#brain-speak")?.addEventListener("click",()=>{
+    if(!("speechSynthesis" in window)){notify("Read aloud is not supported in this browser.");return}
+    const text=$("#brain-plan").innerText||"Your AI workforce memory is ready. Enter a request to build a team.";
+    window.speechSynthesis.cancel();
+    const utterance=new SpeechSynthesisUtterance(text);
+    utterance.rate=0.92;
+    window.speechSynthesis.speak(utterance);
+  });
   renderMemories();
 })();
