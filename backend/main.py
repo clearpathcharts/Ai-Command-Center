@@ -115,9 +115,18 @@ def create_department(item: DepartmentIn):
     return item.model_dump()
 
 @app.get("/api/agents")
-def list_agents():
+def list_agents(q: str = "", limit: int = 100, offset: int = 0):
+    """Paginated agent directory: store many agents without loading the entire workforce."""
+    limit, offset = max(1, min(limit, 500)), max(0, offset)
     with db() as conn:
-        return [dict(r) for r in conn.execute("SELECT * FROM agents ORDER BY created_at")]
+        rows = conn.execute(
+            """SELECT * FROM agents WHERE (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?)
+               ORDER BY created_at DESC LIMIT ? OFFSET ?""",
+            (q, f"%{q}%", f"%{q}%", f"%{q}%", limit, offset)).fetchall()
+        total = conn.execute(
+            "SELECT COUNT(*) FROM agents WHERE (?='' OR name LIKE ? OR role LIKE ? OR instructions LIKE ?)",
+            (q, f"%{q}%", f"%{q}%", f"%{q}%")).fetchone()[0]
+        return {"items": [dict(r) for r in rows], "total": total, "limit": limit, "offset": offset}
 
 @app.post("/api/agents", status_code=201)
 def create_agent(item: AgentIn):
