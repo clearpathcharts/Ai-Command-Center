@@ -59,7 +59,16 @@ def init_db():
           agent_id TEXT, priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'todo',
           created_at TEXT NOT NULL, FOREIGN KEY(agent_id) REFERENCES agents(id)
         );
-        CREATE TABLE IF NOT EXISTS memories (\n          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, title TEXT NOT NULL DEFAULT 'Memory',\n          content TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n        );\n        CREATE TABLE IF NOT EXISTS agent_messages (\n          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, from_agent_id TEXT, to_agent_id TEXT,\n          task_id TEXT, message TEXT NOT NULL, message_type TEXT NOT NULL DEFAULT 'handoff',\n          created_at TEXT NOT NULL\n        );\n        CREATE TABLE IF NOT EXISTS approvals (
+        CREATE TABLE IF NOT EXISTS memories (
+          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, title TEXT NOT NULL DEFAULT 'Memory',
+          content TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS agent_messages (
+          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, from_agent_id TEXT, to_agent_id TEXT,
+          task_id TEXT, message TEXT NOT NULL, message_type TEXT NOT NULL DEFAULT 'handoff',
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS approvals (
           id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
           agent_id TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL,
           reviewed_at TEXT, FOREIGN KEY(agent_id) REFERENCES agents(id)
