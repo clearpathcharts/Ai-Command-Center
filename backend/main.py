@@ -403,6 +403,62 @@ def list_agent_jobs(limit: int = 50, user=Depends(require_firebase_user)):
             (user["uid"], limit)).fetchall()
     return [dict(row) for row in rows]
 
+@app.get("/api/jobs/{job_id}")
+def get_agent_job(job_id: str, user=Depends(require_firebase_user)):
+    """Return one job only when it belongs to the signed-in user."""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT id,agent_id,title,instructions,status,result,error,attempts,created_at,updated_at,started_at,completed_at FROM agent_jobs WHERE id=? AND owner_uid=?",
+            (job_id, user["uid"])
+        ).fetchone()
+    if not row:
+        raise HTTPException(404, "Job not found")
+    return dict(row)
+
+
+@app.post("/api/jobs/{job_id}/cancel")
+def cancel_agent_job(job_id: str, user=Depends(require_firebase_user)):
+    """Cancel a queued job. A running job cannot be force-stopped by this endpoint."""
+    stamp = now()
+    with db() as conn:
+        result = conn.execute(
+            "UPDATE agent_jobs SET status='cancelled', updated_at=?, completed_at=? WHERE id=? AND owner_uid=? AND status='queued'",
+            (stamp, stamp, job_id, user["uid"])
+        )
+        if result.rowcount == 0:
+            exists = conn.execute(
+                "SELECT status FROM agent_jobs WHERE id=? AND owner_uid=?", (job_id, user["uid"])
+            ).fetchone()
+            if not exists:
+                raise HTTPException(404, "Job not found")
+            raise HTTPException(409, "Only queued jobs can be cancelled")
+    return {"id": job_id, "status": "cancelled"}
+
+
+@app.post("/api/jobs/{job_id}/retry", status_code=202)
+def retry_agent_job(job_id: str, user=Depends(require_firebase_user)):
+    """Requeue a failed job while preserving its attempt limit."""
+    stamp = now()
+    with db() as conn:
+        result = conn.execute(
+            """UPDATE agent_jobs SET status='queued', error='', result='', updated_at=?,
+               started_at=NULL, completed_at=NULL
+               WHERE id=? AND owner_uid=? AND status='failed' AND attempts < 3""",
+            (stamp, job_id, user["uid"])
+        )
+        if result.rowcount == 0:
+            row = conn.execute(
+                "SELECT status,attempts FROM agent_jobs WHERE id=? AND owner_uid=?",
+                (job_id, user["uid"])
+            ).fetchone()
+            if not row:
+                raise HTTPException(404, "Job not found")
+            if row["status"] != "failed":
+                raise HTTPException(409, "Only failed jobs can be retried")
+            raise HTTPException(409, "This job has reached its retry limit")
+    return {"id": job_id, "status": "queued", "retried_at": stamp}
+
+
 @app.post("/api/worker/claim")
 def claim_agent_job(_worker=Depends(require_worker_token)):
     stamp = now()
