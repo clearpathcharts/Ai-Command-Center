@@ -136,3 +136,11 @@ The backend dependency manifest has also been normalized so each Python package 
 The memory and agent-message endpoints now require a verified Firebase ID token. Their workspace owner is derived from the token's UID; caller-supplied `workspace_id` values are ignored for authorization. A signed-in user can only search or delete their own memory and can only list their own handoff messages. Tests cover cross-user isolation and unauthenticated access.
 
 The broader departments, agents, tasks, approvals, planner, and AI gateway routes remain blocked until their records and relationships receive equivalent owner scoping. The browser-only workspace remains available locally.
+
+### Core workspace API security
+
+Departments, agents, tasks, and approvals now require Firebase authentication. Every list, create, update, and review operation is scoped to the verified Firebase UID. Agent-to-department, task-to-agent, and approval-to-agent assignments are checked against records owned by that same user.
+
+SQLite startup performs a non-destructive schema migration that adds `owner_uid` to existing core workspace tables. Historical rows are retained under the `legacy-unassigned` owner and are not exposed to signed-in users. New records are always assigned to the authenticated UID.
+
+Automated tests cover cross-user reads, cross-user updates, invalid cross-account relationships, and unauthenticated access. The deterministic planner and model gateway remain locked until their own user-scoped behavior is implemented.
