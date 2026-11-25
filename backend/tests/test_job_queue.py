@@ -142,3 +142,31 @@ def test_memory_and_messages_require_authentication(client):
     main.app.dependency_overrides.pop(main.require_firebase_user, None)
     assert client.get("/api/memory").status_code == 401
     assert client.get("/api/agent-messages").status_code == 401
+
+
+def test_core_workspace_records_are_isolated_by_user(client):
+    department = {"id":"dept-a-001","name":"Research A","purpose":"Private"}
+    assert client.post("/api/departments",json=department).status_code == 201
+    agent = {"id":"agent-a-001","name":"Researcher A","role":"Research","department_id":"dept-a-001","instructions":"Private agent"}
+    assert client.post("/api/agents",json=agent).status_code == 201
+    task = {"id":"task-a-0001","title":"Private task","details":"Only A","agent_id":"agent-a-001","priority":"high"}
+    assert client.post("/api/tasks",json=task).status_code == 201
+    approval = {"id":"approval-a-01","title":"Private approval","description":"Only A","agent_id":"agent-a-001"}
+    assert client.post("/api/approvals",json=approval).status_code == 201
+
+    main.app.dependency_overrides[main.require_firebase_user] = lambda: {"uid":"user-b"}
+    assert client.get("/api/departments").json() == []
+    assert client.get("/api/agents").json()["items"] == []
+    assert client.get("/api/tasks").json() == []
+    assert client.get("/api/approvals").json() == []
+    assert client.patch("/api/tasks/task-a-0001",json={"status":"done"}).status_code == 404
+    assert client.patch("/api/approvals/approval-a-01?decision=approved").status_code == 404
+    assert client.post("/api/agents",json={**agent,"id":"agent-b-001"}).status_code == 404
+
+
+def test_core_workspace_endpoints_require_auth(client):
+    main.app.dependency_overrides.pop(main.require_firebase_user,None)
+    assert client.get("/api/departments").status_code == 401
+    assert client.get("/api/agents").status_code == 401
+    assert client.get("/api/tasks").status_code == 401
+    assert client.get("/api/approvals").status_code == 401
