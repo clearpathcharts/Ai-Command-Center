@@ -120,3 +120,13 @@ The authenticated job API now supports:
 The backend test suite covers job creation, worker claim/completion, queued cancellation, failed-job retry, and cross-user read isolation. GitHub Actions runs these tests on pushes and pull requests.
 
 A running job is not force-terminated by the cancel endpoint. The worker must finish or fail it. Production still requires a durable shared database, authenticated frontend integration, and security review of the older workspace endpoints before real customer data is stored.
+
+## API security gate (current)
+
+The API now fails closed on legacy workspace and model-gateway routes that do not yet enforce per-user ownership. Requests to those routes return HTTP 503 with `WORKSPACE_API_SECURITY_LOCK`. This is intentional: the earlier shared SQLite tables are not safe for multiple users until every record and relationship is scoped to the authenticated Firebase UID.
+
+The health and capability endpoints remain available. The job queue remains Firebase-authenticated, and worker claim/completion endpoints remain protected by the worker shared secret. The frontend's browser-local workspace still works independently of these backend routes.
+
+The backend dependency manifest has also been normalized so each Python package is on its own line. Automated tests now verify that unscoped endpoints stay locked while the secure job queue remains available.
+
+**Not production complete yet:** the next backend milestone is a full owner-UID migration for departments, agents, tasks, approvals, memories, messages, and AI requests, followed by authenticated frontend sign-in and remote queue controls.
