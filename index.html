@@ -21,6 +21,7 @@
         <button class="nav-link active" data-view="overview"><span>⌂</span> Overview</button>
         <button class="nav-link" data-view="agents"><span>◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
         <button class="nav-link" data-view="brain"><span>✧</span> Agent Creator Brain</button>
+        <button class="nav-link" data-view="executive"><span>◉</span> Executive Brain</button>
         <button class="nav-link" data-view="departments"><span>▦</span> Departments</button>
         <button class="nav-link" data-view="tasks"><span>☷</span> Tasks & Projects</button>
         <button class="nav-link" data-view="workflows"><span>⤳</span> Team Workflows</button>
@@ -112,6 +113,18 @@
           <div class="notice-box">This release provides task organization only. It does not yet browse the web, verify claims automatically, or make fraud determinations.</div>
         </section>
 
+        <section class="view" id="view-executive">
+          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · EXECUTIVE ORCHESTRATION</div><h1>Executive Brain</h1><p>Give your workforce a goal. Review the proposed team plan, then approve the tasks you want created.</p></div></div>
+          <div class="executive-hero"><div class="brain-orb">◉</div><div><div class="eyebrow">YOUR CENTRAL COORDINATOR</div><h2>One request. A coordinated team.</h2><p>The Executive Brain organizes work across your departments and agents. You remain the decision-maker.</p></div></div>
+          <section class="panel executive-panel">
+            <label class="brain-label" for="executive-request">What do you want your AI workforce to help accomplish?</label>
+            <textarea id="executive-request" rows="4" placeholder="Example: Research the market for my new product, compare competitors, create a launch plan, and prepare marketing content."></textarea>
+            <div class="brain-actions"><button class="primary-button" id="executive-plan">◉ Organize my workforce</button><button class="quiet-button" id="executive-voice">🎙 Speak my goal</button></div>
+            <p class="executive-hint">Planning is a transparent starter planner in this release. It does not claim agents have completed work.</p>
+          </section>
+          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Proposed team coordination</h2><p>Review each step and the agent assigned to it before adding tasks.</p></div></div><div id="executive-plan-output" aria-live="polite"><div class="resume-placeholder">Your proposed team plan will appear here.</div></div></section>
+          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Agent handoff log</h2><p>A record of planned handoffs between departments. No background agent execution is enabled yet.</p></div></div><div id="executive-handoff-log"><div class="resume-placeholder">No handoffs recorded yet.</div></div></section>
+        </section>
         <section class="view" id="view-brain">
           <div class="page-heading"><div><div class="eyebrow">YOUR WORKFORCE REMEMBERS</div><h1>Agent Creator Brain</h1><p>Describe what you need in everyday language. Find agents you already created, build new specialists, and save important memories.</p></div></div>
           <div class="brain-hero">
