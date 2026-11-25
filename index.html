@@ -27,6 +27,7 @@
         <button class="nav-link" data-view="workflows"><span>⤳</span> Team Workflows</button>
         <button class="nav-link" data-view="approvals"><span>✓</span> Approval Center <b id="nav-approval-count">0</b></button>
         <button class="nav-link" data-view="intelligence"><span>⌕</span> Intelligence Engine</button>
+        <button class="nav-link" data-view="safety"><span>⬡</span> Safety & Request Catalog <b id="nav-safety-count">0</b></button>
       </nav>
       <div class="sidebar-bottom">
         <div class="safety-note"><span class="status-dot"></span><div><strong>You are in control</strong><small>Agents need approval for important actions.</small></div></div>
@@ -151,6 +152,22 @@
           </div>
           <div class="brain-footnote"><strong>Designed for memory support:</strong> Agent names, responsibilities, and notes are searchable. This first release saves data in this browser. Cross-device cloud memory will be enabled when secure accounts and the production database are connected.</div>
         </section>
+        <section class="view" id="view-safety">
+          <div class="page-heading"><div><div class="eyebrow">MANDATORY REQUEST REVIEW</div><h1>Safety & Request Catalog</h1><p>Every submitted request is recorded here and screened for possible safety concerns before work is organized.</p></div></div>
+          <div class="notice-box"><strong>Important:</strong> This first version records requests in this browser on this device. It is not yet a centralized administrator dashboard, and its keyword screening is an early warning aid—not a diagnosis, proof of danger, or substitute for human review.</div>
+          <div class="stats-grid safety-stats">
+            <article class="stat-card"><span>TOTAL REQUESTS</span><strong id="safety-total">0</strong><small>Cataloged on this device</small></article>
+            <article class="stat-card"><span>LOWER CONCERN</span><strong id="safety-low">0</strong><small>No rule matched</small></article>
+            <article class="stat-card"><span>NEEDS REVIEW</span><strong id="safety-review">0</strong><small>Possible concern detected</small></article>
+            <article class="stat-card"><span>URGENT REVIEW</span><strong id="safety-urgent">0</strong><small>High-priority safety language</small></article>
+          </div>
+          <div class="panel safety-panel">
+            <div class="panel-heading"><div><h2>Cataloged requests</h2><p>Review the request, screening result, and date.</p></div><button class="danger-button" id="safety-clear">Clear local catalog</button></div>
+            <div class="filter-row safety-filter"><label class="search-box"><span>⌕</span><input id="safety-search" type="search" placeholder="Search cataloged requests" aria-label="Search cataloged requests"></label><select id="safety-filter" aria-label="Filter by safety level"><option value="all">All safety levels</option><option value="low">Lower concern</option><option value="review">Needs review</option><option value="urgent">Urgent review</option></select></div>
+            <div id="safety-list" class="safety-list" aria-live="polite"></div>
+          </div>
+          <p class="safety-privacy-note">Privacy: request text is stored in this browser's local storage. It is not sent to the public use-case catalog or uploaded to an administrator server in this release. Do not use this prototype with real emergency or highly sensitive information.</p>
+        </section>
         <section class="view" id="view-settings">
           <div class="page-heading"><div><div class="eyebrow">BUILT AROUND YOU</div><h1>Accessibility & settings</h1><p>Adjust the workspace to reduce friction and make work easier to follow.</p></div></div>
           <div class="settings-grid">
@@ -214,5 +231,6 @@
   <script src="./brain.js" defer></script>
   <script src="./memory.js" defer></script>
   <script src="./executive.js" defer></script>
+  <script src="./safety.js" defer></script>
 </body>
 </html>
