@@ -115,18 +115,6 @@ def init_db():
         """)
 init_db()
 
-with db() as _catalog_conn:
-    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS use_case_catalog (
-        slug TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT NOT NULL,
-        description TEXT NOT NULL, agent_roles TEXT NOT NULL, workflow_examples TEXT NOT NULL,
-        created_at TEXT NOT NULL
-    )""")
-    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS catalog_usage (
-        slug TEXT PRIMARY KEY, usage_count INTEGER NOT NULL DEFAULT 0,
-        last_used_at TEXT NOT NULL
-    )""")
-    seed_catalog(_catalog_conn)
-
 # Public, non-personal use-case catalog. Only curated catalog metadata and aggregate
 # category counters are stored here; user prompts, identities, IPs, and workspace data
 # are deliberately never accepted by these endpoints.
@@ -170,6 +158,18 @@ def seed_catalog(conn):
             (slug,title,category,description,"|".join(roles),"|".join(workflows),now())
         )
 
+
+with db() as _catalog_conn:
+    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS use_case_catalog (
+        slug TEXT PRIMARY KEY, title TEXT NOT NULL, category TEXT NOT NULL,
+        description TEXT NOT NULL, agent_roles TEXT NOT NULL, workflow_examples TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )""")
+    _catalog_conn.execute("""CREATE TABLE IF NOT EXISTS catalog_usage (
+        slug TEXT PRIMARY KEY, usage_count INTEGER NOT NULL DEFAULT 0,
+        last_used_at TEXT NOT NULL
+    )""")
+    seed_catalog(_catalog_conn)
 
 class DepartmentIn(BaseModel):
     id: str = Field(min_length=1, max_length=80)
