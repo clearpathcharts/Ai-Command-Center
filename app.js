@@ -75,7 +75,8 @@
     const link=e.target.closest("[data-view-link]");if(link){showView(link.dataset.viewLink);return}
     const action=e.target.closest("[data-action]")?.dataset.action;
     if(action==="new-agent"){startAgentEdit(null);return}
-    if(action==="new-task"){openDialog("task-dialog");return}\n    if(action==="new-workflow"){openDialog("workflow-dialog");return}
+    if(action==="new-task"){openDialog("task-dialog");return}
+    if(action==="new-workflow"){openDialog("workflow-dialog");return}
     if(action==="new-department"){openDialog("department-dialog");return}
     if(action==="research-task"){createTask("Research request","Collect useful sources and prepare a summary.");return}
     if(action==="verification-task"){createTask("Verify sources and claims","Record sources, dates, evidence, and open questions.");return}
