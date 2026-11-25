@@ -170,3 +170,23 @@ def test_core_workspace_endpoints_require_auth(client):
     assert client.get("/api/agents").status_code == 401
     assert client.get("/api/tasks").status_code == 401
     assert client.get("/api/approvals").status_code == 401
+
+
+def test_planner_is_authenticated_and_uses_verified_workspace(client):
+    payload = {"workspace_id":"forged-workspace","request":"help me organize research"}
+    planned = client.post("/api/brain/plan",json=payload)
+    assert planned.status_code == 200
+    assert planned.json()["workspace_id"] == "user-a"
+
+    main.app.dependency_overrides.pop(main.require_firebase_user,None)
+    assert client.post("/api/brain/plan",json=payload).status_code == 401
+
+
+def test_ai_gateway_and_status_require_authentication(client):
+    assert client.get("/api/ai/status").status_code == 200
+    response = client.post("/api/ai/respond",json={"message":"Say hello"})
+    assert response.status_code in (200,503)
+
+    main.app.dependency_overrides.pop(main.require_firebase_user,None)
+    assert client.get("/api/ai/status").status_code == 401
+    assert client.post("/api/ai/respond",json={"message":"Say hello"}).status_code == 401
