@@ -107,3 +107,16 @@ This repository still uses SQLite by default. A separate worker and API instance
 The browser workspace now supports portable JSON backups. Open **Accessibility & Settings → Data on this device** to download a backup or restore one. A backup contains agents, departments, tasks, approvals, workflows, and display preferences. Restore validates the file and asks before replacing the current browser workspace. Keep backups in a private, secure location: they may contain sensitive notes or business information.
 
 Browser storage is still device-local. A downloaded backup is the user's recovery copy; it is not cloud synchronization. Do not treat a successful browser save as proof that data has been synced to a server.
+
+
+## Job queue controls and verification
+
+The authenticated job API now supports:
+- Read one job by ID, restricted to its Firebase owner.
+- Cancel a job only while it is still queued.
+- Retry a failed job while it remains under the three-attempt limit.
+- Read job status, result, error, and timestamps for the signed-in owner.
+
+The backend test suite covers job creation, worker claim/completion, queued cancellation, failed-job retry, and cross-user read isolation. GitHub Actions runs these tests on pushes and pull requests.
+
+A running job is not force-terminated by the cancel endpoint. The worker must finish or fail it. Production still requires a durable shared database, authenticated frontend integration, and security review of the older workspace endpoints before real customer data is stored.
