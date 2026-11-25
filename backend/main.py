@@ -293,3 +293,57 @@ def create_brain_plan(item: BrainPlanIn):
         output.append({**suggestion, "existing_agent": match})
     return {"workspace_id": item.workspace_id, "suggestions": output, "planner": "deterministic-starter",
             "note": "This planner suggests agent templates; it does not run AI models or execute agent work."}
+
+
+class AIRequest(BaseModel):
+    model: Optional[str] = None
+    system: str = Field(default="You are a careful, accessible assistant. Use plain language, be honest about uncertainty, and never claim to have performed actions you did not perform.", max_length=6000)
+    message: str = Field(min_length=1, max_length=20000)
+    temperature: float = Field(default=0.3, ge=0, le=1.5)
+
+@app.post("/api/ai/respond")
+def ai_respond(item: AIRequest):
+    """OpenAI-compatible server-side model gateway. Provider keys remain in server env."""
+    import json
+    import urllib.request
+    import urllib.error
+
+    api_key = os.getenv("AI_API_KEY")
+    if not api_key:
+        raise HTTPException(503, "AI provider is not configured. Add AI_API_KEY in the backend hosting environment.")
+    base_url = os.getenv("AI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+    model = item.model or os.getenv("AI_MODEL", "gpt-4.1-mini")
+    payload = json.dumps({
+        "model": model,
+        "temperature": item.temperature,
+        "messages": [
+            {"role": "system", "content": item.system},
+            {"role": "user", "content": item.message}
+        ]
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        base_url + "/chat/completions",
+        data=payload,
+        headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=45) as response:
+            result = json.loads(response.read().decode("utf-8"))
+        answer = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+        return {"model": model, "provider_endpoint": base_url, "answer": answer}
+    except urllib.error.HTTPError as exc:
+        # Never return provider request headers or API credentials to the client.
+        detail = exc.read().decode("utf-8", errors="replace")[:1200]
+        raise HTTPException(502, "AI provider returned an error: " + detail)
+    except Exception:
+        raise HTTPException(502, "Could not reach the configured AI provider.")
+
+@app.get("/api/ai/status")
+def ai_status():
+    return {
+        "configured": bool(os.getenv("AI_API_KEY")),
+        "provider_endpoint": os.getenv("AI_BASE_URL", "https://api.openai.com/v1"),
+        "model": os.getenv("AI_MODEL", "gpt-4.1-mini"),
+        "note": "The API key is stored server-side and is never returned."
+    }
