@@ -224,9 +224,11 @@ def capabilities():
         "agent_message_handoff_api": True,
         "agent_planner": "deterministic starter only",
         "web_research": False,
-        "background_workers": False,
-        "authentication": False,
-        "notice": "Do not expose this API publicly until authentication, per-user authorization, and production database storage are configured."
+        "background_workers": "worker implementation added; requires separate deployment and shared persistent database",
+        "authenticated_job_queue": True,
+        "worker_token_protection": True,
+        "legacy_workspace_routes_authenticated": False,
+        "notice": "Only /api/jobs is Firebase-authenticated. Existing legacy workspace routes still need per-user authorization before public multi-user use."
     }
 
 
