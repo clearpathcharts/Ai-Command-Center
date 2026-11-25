@@ -59,7 +59,7 @@ def init_db():
           agent_id TEXT, priority TEXT NOT NULL DEFAULT 'normal', status TEXT NOT NULL DEFAULT 'todo',
           created_at TEXT NOT NULL, FOREIGN KEY(agent_id) REFERENCES agents(id)
         );
-        CREATE TABLE IF NOT EXISTS approvals (
+        CREATE TABLE IF NOT EXISTS memories (\n          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, title TEXT NOT NULL DEFAULT 'Memory',\n          content TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, updated_at TEXT NOT NULL\n        );\n        CREATE TABLE IF NOT EXISTS agent_messages (\n          id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, from_agent_id TEXT, to_agent_id TEXT,\n          task_id TEXT, message TEXT NOT NULL, message_type TEXT NOT NULL DEFAULT 'handoff',\n          created_at TEXT NOT NULL\n        );\n        CREATE TABLE IF NOT EXISTS approvals (
           id TEXT PRIMARY KEY, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '',
           agent_id TEXT, status TEXT NOT NULL DEFAULT 'pending', created_at TEXT NOT NULL,
           reviewed_at TEXT, FOREIGN KEY(agent_id) REFERENCES agents(id)
@@ -193,8 +193,103 @@ def capabilities():
         "workspace_crud": True,
         "persistent_storage": "sqlite",
         "live_model_execution": False,
+        "persistent_memory_api": True,
+        "agent_message_handoff_api": True,
+        "agent_planner": "deterministic starter only",
         "web_research": False,
         "background_workers": False,
         "authentication": False,
         "notice": "Do not expose this API publicly until authentication, per-user authorization, and production database storage are configured."
     }
+
+
+# Memory and agent-to-agent coordination foundations.
+# Production MUST add authentication and derive workspace_id from the authenticated identity.
+class MemoryIn(BaseModel):
+    id: str = Field(min_length=1, max_length=80)
+    workspace_id: str = Field(min_length=1, max_length=120)
+    title: str = Field(default="Memory", max_length=160)
+    content: str = Field(min_length=1, max_length=12000)
+    tags: str = Field(default="", max_length=1000)
+
+class AgentMessageIn(BaseModel):
+    id: str = Field(min_length=1, max_length=80)
+    workspace_id: str = Field(min_length=1, max_length=120)
+    from_agent_id: Optional[str] = None
+    to_agent_id: Optional[str] = None
+    task_id: Optional[str] = None
+    message: str = Field(min_length=1, max_length=12000)
+    message_type: str = Field(default="handoff", pattern="^(handoff|result|question|status|review)$")
+
+class BrainPlanIn(BaseModel):
+    workspace_id: str = Field(min_length=1, max_length=120)
+    request: str = Field(min_length=1, max_length=5000)
+
+@app.post("/api/memory", status_code=201)
+def save_memory(item: MemoryIn):
+    stamp = now()
+    with db() as conn:
+        conn.execute("INSERT INTO memories VALUES (?,?,?,?,?,?,?)",
+                     (item.id, item.workspace_id, item.title, item.content, item.tags, stamp, stamp))
+    return {**item.model_dump(), "created_at": stamp, "updated_at": stamp}
+
+@app.get("/api/memory")
+def search_memory(workspace_id: str, q: str = "", limit: int = 50, offset: int = 0):
+    limit, offset = max(1, min(limit, 200)), max(0, offset)
+    with db() as conn:
+        rows = conn.execute(
+            """SELECT * FROM memories WHERE workspace_id=? AND
+               (?='' OR title LIKE ? OR content LIKE ? OR tags LIKE ?)
+               ORDER BY updated_at DESC LIMIT ? OFFSET ?""",
+            (workspace_id, q, f"%{q}%", f"%{q}%", f"%{q}%", limit, offset)).fetchall()
+        return [dict(r) for r in rows]
+
+@app.delete("/api/memory/{memory_id}")
+def delete_memory(memory_id: str, workspace_id: str):
+    with db() as conn:
+        result = conn.execute("DELETE FROM memories WHERE id=? AND workspace_id=?", (memory_id, workspace_id))
+        if result.rowcount == 0:
+            raise HTTPException(404, "Memory not found")
+    return {"deleted": True, "id": memory_id}
+
+@app.post("/api/agent-messages", status_code=201)
+def send_agent_message(item: AgentMessageIn):
+    stamp = now()
+    with db() as conn:
+        conn.execute("INSERT INTO agent_messages VALUES (?,?,?,?,?,?,?,?)",
+                     (item.id, item.workspace_id, item.from_agent_id, item.to_agent_id, item.task_id, item.message, item.message_type, stamp))
+    return {**item.model_dump(), "created_at": stamp}
+
+@app.get("/api/agent-messages")
+def list_agent_messages(workspace_id: str, task_id: Optional[str] = None, limit: int = 100):
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        rows = conn.execute(
+            """SELECT * FROM agent_messages WHERE workspace_id=? AND (? IS NULL OR task_id=?)
+               ORDER BY created_at DESC LIMIT ?""",
+            (workspace_id, task_id, task_id, limit)).fetchall()
+        return [dict(r) for r in rows]
+
+@app.post("/api/brain/plan")
+def create_brain_plan(item: BrainPlanIn):
+    """Deterministic starter planner; model-powered planning is a later integration."""
+    request = item.request.lower()
+    catalog = [
+        {"name":"Personal Memory Assistant","role":"Personal organization and memory support","department":"Personal Assistance","keywords":["remember","memory","forget","deadline","routine"],"instructions":"Help the user remember commitments and break requests into small steps."},
+        {"name":"Appointment Coordinator","role":"Appointment and schedule organizer","department":"Administration","keywords":["appointment","calendar","schedule","doctor","meeting"],"instructions":"Organize appointment details and prepare reminder drafts for approval."},
+        {"name":"Document Organizer","role":"Paperwork and document assistant","department":"Administration","keywords":["paperwork","document","form","records","letter"],"instructions":"Organize documents and explain forms in plain language. Never sign or submit."},
+        {"name":"Research Specialist","role":"Research and source verification","department":"Research","keywords":["research","investigate","compare","verify","sources"],"instructions":"Prepare research plans and distinguish verified facts from uncertainty."},
+        {"name":"Marketing Strategist","role":"Marketing and content planning","department":"Marketing","keywords":["marketing","campaign","advertising","social","content"],"instructions":"Prepare campaign plans and drafts. Require approval before publishing or spending."},
+        {"name":"Technology Builder","role":"Software and technical project assistant","department":"Technology","keywords":["website","software","code","app","technical"],"instructions":"Break technical work into implementation steps and prepare changes for review."},
+        {"name":"Communication Assistant","role":"Writing and communication support","department":"Personal Assistance","keywords":["email","write","message","letter","reply"],"instructions":"Draft communications and ask before sending."},
+        {"name":"Accessibility Support Agent","role":"Task simplification and accessible workflows","department":"Personal Assistance","keywords":["disability","accessible","overwhelmed","simple","focus"],"instructions":"Reduce cognitive load and offer one clear next step at a time."}
+    ]
+    selected = [x for x in catalog if any(k in request for k in x["keywords"])] or [catalog[0], catalog[3]]
+    with db() as conn:
+        existing = [dict(r) for r in conn.execute("SELECT id,name,role FROM agents")]
+    output = []
+    for suggestion in selected:
+        match = next((a for a in existing if a["name"].casefold()==suggestion["name"].casefold() or a["role"].casefold()==suggestion["role"].casefold()), None)
+        output.append({**suggestion, "existing_agent": match})
+    return {"workspace_id": item.workspace_id, "suggestions": output, "planner": "deterministic-starter",
+            "note": "This planner suggests agent templates; it does not run AI models or execute agent work."}
