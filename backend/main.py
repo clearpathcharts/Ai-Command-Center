@@ -258,7 +258,8 @@ def capabilities():
         "worker_token_protection": True,
         "legacy_workspace_routes_authenticated": True,
         "legacy_workspace_routes_disabled_for_safety": False,
-        "authenticated_memory_api": True,\n        "authenticated_agent_message_api": True,
+        "authenticated_memory_api": True,
+        "authenticated_agent_message_api": True,
         "authenticated_core_workspace_api": True,
         "legacy_workspace_routes_disabled_for_safety": False,
         "notice": "Departments, agents, tasks, approvals, memories, and agent messages are Firebase-authenticated and scoped to the verified user UID. Planner and model-gateway routes remain locked pending their own ownership and authentication controls."
