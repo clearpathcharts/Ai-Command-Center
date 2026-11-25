@@ -85,3 +85,18 @@ def test_user_cannot_read_another_users_job(client):
     main.app.dependency_overrides[main.require_firebase_user] = lambda: {"uid": "user-b"}
     response = client.get("/api/jobs/job-test-0001")
     assert response.status_code == 404
+
+
+def test_unscoped_workspace_routes_are_locked(client):
+    agents = client.get("/api/agents")
+    assert agents.status_code == 503
+    assert agents.json()["code"] == "WORKSPACE_API_SECURITY_LOCK"
+
+    ai_status = client.get("/api/ai/status")
+    assert ai_status.status_code == 503
+
+    health = client.get("/health")
+    assert health.status_code == 200
+
+    # The authenticated job queue remains available.
+    assert create_job(client, "job-security-0001").status_code == 202
