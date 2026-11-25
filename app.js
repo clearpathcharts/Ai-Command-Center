@@ -14,7 +14,7 @@
     {id:"agent-research",name:"Research Specialist",role:"Research and source review",department:"research",instructions:"Prepare research plans, organize source links, and summarize evidence without inventing facts.",permission:"prepare"},
     {id:"agent-organizer",name:"Organization Assistant",role:"Documents and planning",department:"admin",instructions:"Turn complex work into clear, small steps and organize the user's task list.",permission:"prepare"}
   ];
-  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],settings:{largeText:false,highContrast:false,reduceMotion:false,simpleMode:false}};
+  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],workflows:[],settings:{largeText:false,highContrast:false,reduceMotion:false,simpleMode:false}};
   let state = loadState();
   let activeTaskFilter = "all";
   let toastTimer;
@@ -27,7 +27,7 @@
   function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3000)}
   function departmentName(key){return state.departments.find(d=>d.id===key)?.name||"Unassigned"}
   function agentName(key){return state.agents.find(a=>a.id===key)?.name||"Unassigned"}
-  function showView(name){$$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));$$(".nav-link[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#breadcrumb-current").textContent=({overview:"Overview",agents:"My AI Agents",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings"})[name]||"Overview";$("#sidebar").classList.remove("open");window.scrollTo({top:0,behavior:"smooth"})}
+  function showView(name){$$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));$$(".nav-link[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===name));$("#breadcrumb-current").textContent=({overview:"Overview",agents:"My AI Agents",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings",workflows:"Team Workflows"})[name]||"Overview";$("#sidebar").classList.remove("open");window.scrollTo({top:0,behavior:"smooth"})}
   function empty(title,detail){return '<div class="empty-state"><strong>'+escapeHtml(title)+'</strong>'+escapeHtml(detail)+'</div>'}
   function render(){
     $("#stat-agents").textContent=state.agents.length;$("#stat-departments").textContent=state.departments.length;$("#stat-tasks").textContent=state.tasks.filter(t=>t.status!=="done").length;$("#stat-approvals").textContent=state.approvals.filter(a=>a.status==="pending").length;
@@ -38,7 +38,7 @@
     const deptOptions=state.departments.map(d=>'<option value="'+escapeHtml(d.id)+'">'+escapeHtml(d.name)+'</option>').join("");
     $("#agent-department").innerHTML=deptOptions;$("#agent-department-filter").innerHTML='<option value="">All departments</option>'+deptOptions;
     $("#task-agent").innerHTML='<option value="">Leave unassigned</option>'+state.agents.map(a=>'<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.name)+'</option>').join("");
-    renderAgents();renderDepartments();renderTasks();renderApprovals();applySettings();
+    renderAgents();renderDepartments();renderTasks();renderApprovals();renderWorkflows();applySettings();
   }
   function renderAgents(){
     const q=($("#agent-search")?.value||"").toLowerCase(),dept=$("#agent-department-filter")?.value||"";
@@ -51,6 +51,15 @@
   function renderTasks(){
     const list=state.tasks.filter(t=>activeTaskFilter==="all"||t.status===activeTaskFilter);
     $("#task-board").innerHTML=list.map(t=>'<article class="task-row"><div class="task-row-main"><h3>'+escapeHtml(t.title)+'</h3><p>'+escapeHtml(t.details||"No extra details")+' · '+escapeHtml(agentName(t.agent))+' · '+escapeHtml(t.priority)+' priority</p></div><span class="status '+t.status+'">'+({todo:"To do",inprogress:"In progress",done:"Completed"}[t.status])+'</span><select aria-label="Change status for '+escapeHtml(t.title)+'" data-task-status="'+escapeHtml(t.id)+'"><option value="todo" '+(t.status==="todo"?"selected":"")+'>To do</option><option value="inprogress" '+(t.status==="inprogress"?"selected":"")+'>In progress</option><option value="done" '+(t.status==="done"?"selected":"")+'>Completed</option></select><button class="mini-button" data-delete-task="'+escapeHtml(t.id)+'">Delete</button></article>').join("")||empty("Nothing here yet","Create a task to get your work moving.");
+  }
+  function renderWorkflows(){
+    const root=$("#workflow-list");
+    if(!state.workflows.length){root.innerHTML=empty("No team workflows yet","Build a workflow to turn a larger goal into smaller assignments for your agents.");return}
+    root.innerHTML=state.workflows.map(w=>{
+      const tasks=state.tasks.filter(t=>t.workflowId===w.id),done=tasks.filter(t=>t.status==="done").length;
+      const pct=tasks.length?Math.round(done/tasks.length*100):0;
+      return '<article class="workflow-card"><div class="workflow-top"><div><span class="pill">TEAM PLAN</span><h2>'+escapeHtml(w.title)+'</h2><p>'+escapeHtml(w.objective)+'</p></div><div class="workflow-progress"><strong>'+pct+'%</strong><small>'+done+'/'+tasks.length+' complete</small></div></div><div class="progress-track"><span style="width:'+pct+'%"></span></div><div class="workflow-steps">'+tasks.map((t,i)=>'<div class="workflow-step"><span class="step-number">'+(i+1)+'</span><div class="step-copy"><strong>'+escapeHtml(t.title)+'</strong><small>'+escapeHtml(agentName(t.agent))+' · '+escapeHtml(t.status==="done"?"Completed":t.status==="inprogress"?"In progress":"To do")+'</small></div><span class="status '+t.status+'">'+({todo:"To do",inprogress:"Active",done:"Done"}[t.status])+'</span></div>').join("")+'</div><div class="workflow-footer"><small>Created '+new Date(w.createdAt).toLocaleDateString()+'</small><button class="text-button" data-view-link="tasks">Manage tasks →</button></div></article>'
+    }).join("");
   }
   function renderApprovals(){
     const list=state.approvals.filter(a=>a.status==="pending");
@@ -66,7 +75,7 @@
     const link=e.target.closest("[data-view-link]");if(link){showView(link.dataset.viewLink);return}
     const action=e.target.closest("[data-action]")?.dataset.action;
     if(action==="new-agent"){startAgentEdit(null);return}
-    if(action==="new-task"){openDialog("task-dialog");return}
+    if(action==="new-task"){openDialog("task-dialog");return}\n    if(action==="new-workflow"){openDialog("workflow-dialog");return}
     if(action==="new-department"){openDialog("department-dialog");return}
     if(action==="research-task"){createTask("Research request","Collect useful sources and prepare a summary.");return}
     if(action==="verification-task"){createTask("Verify sources and claims","Record sources, dates, evidence, and open questions.");return}
@@ -82,6 +91,25 @@
   });
   $("#agent-form").addEventListener("submit",e=>{e.preventDefault();const existing=state.agents.find(a=>a.id===$("#agent-id").value);const data={id:existing?.id||id("agent"),name:$("#agent-name").value.trim(),role:$("#agent-role").value.trim(),department:$("#agent-department").value,instructions:$("#agent-instructions").value.trim(),permission:$("#agent-permission").value};if(existing)Object.assign(existing,data);else state.agents.push(data);save();closeDialog("agent-dialog");toast(existing?"Agent updated.":"Your new agent is ready to organize work.");showView("agents")});
   $("#task-form").addEventListener("submit",e=>{e.preventDefault();createTask($("#task-title").value.trim(),$("#task-details").value.trim(),$("#task-agent").value,$("#task-priority").value);closeDialog("task-dialog");$("#task-form").reset()});
+  $("#workflow-form").addEventListener("submit",e=>{
+    e.preventDefault();
+    const objective=$("#workflow-objective").value.trim(),kind=$("#workflow-template").value;
+    const plans={
+      general:[["Clarify the goal and success criteria","personal"],["Gather information and requirements","research"],["Prepare the first deliverable","admin"],["Review the result and identify next steps","personal"]],
+      research:[["Define the research question and scope","research"],["Gather relevant sources and evidence","research"],["Check source quality and record uncertainties","research"],["Prepare an easy-to-understand findings report","admin"]],
+      business:[["Clarify the business idea, audience, and goals","personal"],["Research the market and competitors","research"],["Outline operations and required resources","admin"],["Prepare a financial information checklist","finance"],["Review the plan and next decisions","personal"]],
+      marketing:[["Define the audience, offer, and campaign goal","marketing"],["Research audience needs and competing messages","research"],["Prepare campaign messaging and content ideas","marketing"],["Create a launch checklist and measurement plan","admin"]],
+      software:[["Document the user problem and requirements","technology"],["Research technical options and constraints","research"],["Create an implementation plan","technology"],["Prepare accessibility and quality checks","admin"],["Review milestones and release readiness","personal"]]
+    };
+    const workflowId=id("workflow"),title=objective.length>65?objective.slice(0,62)+"…":objective;
+    const workflow={id:workflowId,title,objective,template:kind,createdAt:new Date().toISOString()};
+    state.workflows.unshift(workflow);
+    (plans[kind]||plans.general).forEach(([step,dept])=>{
+      const agent=state.agents.find(x=>x.department===dept)||state.agents.find(x=>x.department==="personal")||null;
+      state.tasks.push({id:id("task"),title:step,details:"Part of workflow: "+title,agent:agent?.id||"",priority:"normal",status:"todo",workflowId,createdAt:new Date().toISOString()});
+    });
+    save();closeDialog("workflow-dialog");$("#workflow-form").reset();toast("Team plan created. Review the assignments before work begins.");showView("workflows");
+  });
   $("#department-form").addEventListener("submit",e=>{e.preventDefault();state.departments.push({id:id("dept"),name:$("#department-name").value.trim(),purpose:$("#department-purpose").value.trim(),icon:"▦"});save();closeDialog("department-dialog");$("#department-form").reset();toast("Department created.");showView("departments")});
   $("#command-form").addEventListener("submit",e=>{e.preventDefault();const text=$("#command-input").value.trim();if(!text){toast("Tell us what you need help with first.");$("#command-input").focus();return}createTask(text,"Created from your executive assistant request.");$("#command-input").value=""});
   $("#agent-search").addEventListener("input",renderAgents);$("#agent-department-filter").addEventListener("change",renderAgents);
