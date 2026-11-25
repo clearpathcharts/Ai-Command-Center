@@ -130,3 +130,9 @@ The health and capability endpoints remain available. The job queue remains Fire
 The backend dependency manifest has also been normalized so each Python package is on its own line. Automated tests now verify that unscoped endpoints stay locked while the secure job queue remains available.
 
 **Not production complete yet:** the next backend milestone is a full owner-UID migration for departments, agents, tasks, approvals, memories, messages, and AI requests, followed by authenticated frontend sign-in and remote queue controls.
+
+### Newly secured personal memory and agent handoffs
+
+The memory and agent-message endpoints now require a verified Firebase ID token. Their workspace owner is derived from the token's UID; caller-supplied `workspace_id` values are ignored for authorization. A signed-in user can only search or delete their own memory and can only list their own handoff messages. Tests cover cross-user isolation and unauthenticated access.
+
+The broader departments, agents, tasks, approvals, planner, and AI gateway routes remain blocked until their records and relationships receive equivalent owner scoping. The browser-only workspace remains available locally.
