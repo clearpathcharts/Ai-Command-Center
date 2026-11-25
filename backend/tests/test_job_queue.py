@@ -100,3 +100,45 @@ def test_unscoped_workspace_routes_are_locked(client):
 
     # The authenticated job queue remains available.
     assert create_job(client, "job-security-0001").status_code == 202
+
+
+def test_memory_is_scoped_to_authenticated_user(client):
+    payload = {
+        "id": "memory-user-a-01",
+        "workspace_id": "attacker-selected-workspace",
+        "title": "Private note",
+        "content": "Only user A should see this.",
+        "tags": "private"
+    }
+    saved = client.post("/api/memory", json=payload)
+    assert saved.status_code == 201
+    assert saved.json()["workspace_id"] == "user-a"
+
+    # A caller cannot read user A's memory by supplying their workspace ID.
+    main.app.dependency_overrides[main.require_firebase_user] = lambda: {"uid": "user-b"}
+    other_user = client.get("/api/memory", params={"workspace_id": "user-a"})
+    assert other_user.status_code == 200
+    assert other_user.json() == []
+
+
+def test_agent_messages_are_scoped_to_authenticated_user(client):
+    payload = {
+        "id": "message-user-a-01",
+        "workspace_id": "attacker-selected-workspace",
+        "message": "Private handoff",
+        "message_type": "handoff"
+    }
+    saved = client.post("/api/agent-messages", json=payload)
+    assert saved.status_code == 201
+    assert saved.json()["workspace_id"] == "user-a"
+
+    main.app.dependency_overrides[main.require_firebase_user] = lambda: {"uid": "user-b"}
+    other_user = client.get("/api/agent-messages", params={"workspace_id": "user-a"})
+    assert other_user.status_code == 200
+    assert other_user.json() == []
+
+
+def test_memory_and_messages_require_authentication(client):
+    main.app.dependency_overrides.pop(main.require_firebase_user, None)
+    assert client.get("/api/memory").status_code == 401
+    assert client.get("/api/agent-messages").status_code == 401
