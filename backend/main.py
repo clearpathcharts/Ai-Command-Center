@@ -262,7 +262,6 @@ def capabilities():
         "legacy_workspace_routes_authenticated": True,
         "authenticated_planner": True,
         "authenticated_ai_gateway": True,
-        "legacy_workspace_routes_disabled_for_safety": False,
         "authenticated_memory_api": True,
         "authenticated_agent_message_api": True,
         "authenticated_core_workspace_api": True,
