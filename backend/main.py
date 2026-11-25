@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from auth import require_firebase_user, require_worker_token
@@ -27,8 +28,31 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "X-Worker-Token"],
 )
+
+# Fail closed: legacy shared-workspace endpoints lack per-user ownership checks.
+# Keep them unavailable rather than risk cross-account data exposure.
+@app.middleware("http")
+async def block_unscoped_workspace_routes(request, call_next):
+    path = request.url.path
+    safe = (
+        path == "/health"
+        or path == "/api/capabilities"
+        or path == "/api/jobs"
+        or path.startswith("/api/jobs/")
+        or path == "/api/worker/claim"
+        or path == "/api/worker/complete"
+    )
+    if path.startswith("/api/") and not safe:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "detail": "This workspace API is temporarily disabled until per-user access controls are complete.",
+                "code": "WORKSPACE_API_SECURITY_LOCK"
+            }
+        )
+    return await call_next(request)
 
 @contextmanager
 def db():
@@ -228,7 +252,8 @@ def capabilities():
         "authenticated_job_queue": True,
         "worker_token_protection": True,
         "legacy_workspace_routes_authenticated": False,
-        "notice": "Only /api/jobs is Firebase-authenticated. Existing legacy workspace routes still need per-user authorization before public multi-user use."
+        "legacy_workspace_routes_disabled_for_safety": True,
+        "notice": "Only health, capabilities, Firebase-authenticated jobs, and worker-token routes are available. Legacy workspace and AI routes are blocked until per-user authorization and ownership checks are implemented."
     }
 
 
