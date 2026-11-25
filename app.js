@@ -21,7 +21,23 @@
   const $ = (s,root=document) => root.querySelector(s);
   const $$ = (s,root=document) => [...root.querySelectorAll(s)];
   function loadState(){try{const saved=JSON.parse(localStorage.getItem(KEY));return saved?{...initial,...saved,settings:{...initial.settings,...saved.settings}}:structuredClone(initial)}catch{return structuredClone(initial)}}
-  function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(state));render();return true}catch(error){console.error("Workspace save failed",error);toast("This device could not save the latest change. Export a backup and free some browser storage.");return false}}
+  function validBackup(data){
+    if(!data||typeof data!=="object"||Array.isArray(data))return false;
+    const arrays=["departments","agents","tasks","approvals","workflows"];
+    if(!arrays.every(key=>Array.isArray(data[key])))return false;
+    if(data.settings!==undefined&&(!data.settings||typeof data.settings!=="object"||Array.isArray(data.settings)))return false;
+    const max={departments:500,agents:5000,tasks:20000,approvals:10000,workflows:5000};
+    return arrays.every(key=>data[key].length<=max[key]);
+  }
+  function downloadBackup(){
+    const backup={format:"aicc-workspace-backup",version:1,exportedAt:new Date().toISOString(),workspace:state};
+    const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download="ai-command-center-backup-"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast("Backup downloaded. Keep it somewhere safe.");
+  }
   function id(prefix){return prefix+"-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)}
   function escapeHtml(value=""){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
   function toast(message){const el=$("#toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3000)}
@@ -119,7 +135,22 @@
   $("#focus-toggle").addEventListener("click",()=>{const on=document.body.classList.toggle("focus-mode");$("#focus-toggle").setAttribute("aria-pressed",String(on));$("#focus-toggle").textContent=on?"◉ Exit focus mode":"◉ Focus mode"});
   $("#menu-toggle").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
   $("#rescue-button").addEventListener("click",()=>openDialog("rescue-dialog"));
-  $("#export-data").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="ai-command-center-workspace.json";a.click();URL.revokeObjectURL(url);toast("Workspace export prepared.")});
+  $("#export-data").addEventListener("click",downloadBackup);
+  $("#import-data").addEventListener("change",async event=>{
+    const file=event.target.files?.[0];if(!file)return;
+    try{
+      if(file.size>10*1024*1024)throw new Error("Backup file is larger than 10 MB.");
+      const parsed=JSON.parse(await file.text());
+      const candidate=parsed?.format==="aicc-workspace-backup"?parsed.workspace:parsed;
+      if(!validBackup(candidate))throw new Error("This file is not a valid AI Command Center workspace backup.");
+      if(!confirm("Replace the workspace on this device with the backup? Download a backup of the current workspace first if you want to keep it."))return;
+      const restored={...initial,...candidate,settings:{...initial.settings,...(candidate.settings||{})}};
+      const previous=state;state=restored;
+      if(!save()){state=previous;render();throw new Error("The restored workspace could not be saved. Your current workspace has been kept.");}
+      toast("Workspace restored successfully.");
+    }catch(error){console.error("Backup import failed",error);toast(error.message||"Could not read this backup file.");}
+    finally{event.target.value="";}
+  });
   $("#voice-button").addEventListener("click",()=>{const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){toast("Voice input is not supported in this browser. You can still type your request.");return}const rec=new SpeechRecognition();rec.lang=navigator.language||"en-US";rec.interimResults=false;rec.onresult=e=>{$("#command-input").value+=($("#command-input").value?" ":"")+e.results[0][0].transcript;$("#command-input").focus()};rec.onerror=()=>toast("Voice input could not start. Please try typing instead.");rec.start()});
   $("#rescue-dialog").addEventListener("click",e=>{if(e.target===e.currentTarget)closeDialog("rescue-dialog")});
   window.AICC={getState:()=>state,save,showView,toast,createTask};
