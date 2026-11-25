@@ -259,13 +259,13 @@ def capabilities():
         "background_workers": "worker implementation added; requires separate deployment and shared persistent database",
         "authenticated_job_queue": True,
         "worker_token_protection": True,
-        "legacy_workspace_routes_authenticated": True,
+        "legacy_workspace_routes_authenticated": True,\n        "authenticated_planner": True,\n        "authenticated_ai_gateway": True,
         "legacy_workspace_routes_disabled_for_safety": False,
         "authenticated_memory_api": True,
         "authenticated_agent_message_api": True,
         "authenticated_core_workspace_api": True,
         "legacy_workspace_routes_disabled_for_safety": False,
-        "notice": "Departments, agents, tasks, approvals, memories, and agent messages are Firebase-authenticated and scoped to the verified user UID. Planner and model-gateway routes remain locked pending their own ownership and authentication controls."
+        "notice": "Departments, agents, tasks, approvals, memories, and agent messages are Firebase-authenticated and scoped to the verified user UID. The deterministic planner and model gateway require Firebase authentication; model execution remains dependent on server-side provider configuration."
     }
 
 
