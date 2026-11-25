@@ -87,13 +87,13 @@ def test_user_cannot_read_another_users_job(client):
     assert response.status_code == 404
 
 
-def test_unscoped_workspace_routes_are_locked(client):
+def test_secured_workspace_routes_are_available_and_ai_status_requires_auth(client):
     agents = client.get("/api/agents")
     assert agents.status_code == 200
     assert agents.json()["items"] == []
 
     ai_status = client.get("/api/ai/status")
-    assert ai_status.status_code == 503
+    assert ai_status.status_code == 200
 
     health = client.get("/health")
     assert health.status_code == 200
