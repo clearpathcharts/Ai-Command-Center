@@ -39,6 +39,9 @@ async def block_unscoped_workspace_routes(request, call_next):
     safe = (
         path == "/health"
         or path == "/api/capabilities"
+        or path == "/api/memory"
+        or path.startswith("/api/memory/")
+        or path == "/api/agent-messages"
         or path == "/api/jobs"
         or path.startswith("/api/jobs/")
         or path == "/api/worker/claim"
@@ -280,15 +283,18 @@ class BrainPlanIn(BaseModel):
     request: str = Field(min_length=1, max_length=5000)
 
 @app.post("/api/memory", status_code=201)
-def save_memory(item: MemoryIn):
+def save_memory(item: MemoryIn, user=Depends(require_firebase_user)):
     stamp = now()
+    owner_uid = user["uid"]
     with db() as conn:
         conn.execute("INSERT INTO memories VALUES (?,?,?,?,?,?,?)",
-                     (item.id, item.workspace_id, item.title, item.content, item.tags, stamp, stamp))
-    return {**item.model_dump(), "created_at": stamp, "updated_at": stamp}
+                     (item.id, owner_uid, item.title, item.content, item.tags, stamp, stamp))
+    return {**item.model_dump(), "workspace_id": owner_uid, "created_at": stamp, "updated_at": stamp}
 
 @app.get("/api/memory")
-def search_memory(workspace_id: str, q: str = "", limit: int = 50, offset: int = 0):
+def search_memory(workspace_id: Optional[str] = None, q: str = "", limit: int = 50, offset: int = 0, user=Depends(require_firebase_user)):
+    # Ignore caller-supplied workspace IDs; identity comes only from the verified token.
+    workspace_id = user["uid"]
     limit, offset = max(1, min(limit, 200)), max(0, offset)
     with db() as conn:
         rows = conn.execute(
@@ -299,7 +305,8 @@ def search_memory(workspace_id: str, q: str = "", limit: int = 50, offset: int =
         return [dict(r) for r in rows]
 
 @app.delete("/api/memory/{memory_id}")
-def delete_memory(memory_id: str, workspace_id: str):
+def delete_memory(memory_id: str, workspace_id: Optional[str] = None, user=Depends(require_firebase_user)):
+    workspace_id = user["uid"]
     with db() as conn:
         result = conn.execute("DELETE FROM memories WHERE id=? AND workspace_id=?", (memory_id, workspace_id))
         if result.rowcount == 0:
@@ -307,15 +314,17 @@ def delete_memory(memory_id: str, workspace_id: str):
     return {"deleted": True, "id": memory_id}
 
 @app.post("/api/agent-messages", status_code=201)
-def send_agent_message(item: AgentMessageIn):
+def send_agent_message(item: AgentMessageIn, user=Depends(require_firebase_user)):
     stamp = now()
+    owner_uid = user["uid"]
     with db() as conn:
         conn.execute("INSERT INTO agent_messages VALUES (?,?,?,?,?,?,?,?)",
-                     (item.id, item.workspace_id, item.from_agent_id, item.to_agent_id, item.task_id, item.message, item.message_type, stamp))
-    return {**item.model_dump(), "created_at": stamp}
+                     (item.id, owner_uid, item.from_agent_id, item.to_agent_id, item.task_id, item.message, item.message_type, stamp))
+    return {**item.model_dump(), "workspace_id": owner_uid, "created_at": stamp}
 
 @app.get("/api/agent-messages")
-def list_agent_messages(workspace_id: str, task_id: Optional[str] = None, limit: int = 100):
+def list_agent_messages(workspace_id: Optional[str] = None, task_id: Optional[str] = None, limit: int = 100, user=Depends(require_firebase_user)):
+    workspace_id = user["uid"]
     limit = max(1, min(limit, 500))
     with db() as conn:
         rows = conn.execute(
