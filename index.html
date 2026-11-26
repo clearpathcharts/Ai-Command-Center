@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#000000">
-  <meta name="description" content="A free, accessible AI workforce command center by ClearPath. Create unlimited agents, organize departments, and coordinate work — with you always in control.">
-  <title>ClearPath AI Command Center</title>
+  <meta name="description" content="A free, accessible AI workforce command center by Clear Path Markets Science. Create unlimited agents, organize departments, and coordinate work — with you always in control.">
+  <title>Clear Path Markets Science</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body class="theme-clearpath">
@@ -14,7 +14,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">✦</div>
-        <div><strong>CLEARPATH</strong><span>AI COMMAND CENTER</span></div>
+        <div><strong>CLEAR PATH</strong><span>MARKETS SCIENCE</span><small class="brand-sub">AI Command Center</small></div>
       </div>
       <div class="workspace-label">YOUR WORKSPACE</div>
       <nav aria-label="Main navigation">
@@ -30,6 +30,7 @@
         <button class="nav-link" data-view="social"><span aria-hidden="true">✉</span> Social Media Studio</button>
         <button class="nav-link" data-view="knowledge"><span aria-hidden="true">▤</span> Knowledge Base</button>
         <button class="nav-link" data-view="builder"><span aria-hidden="true">⌨</span> Build Your Own App</button>
+        <button class="nav-link" data-view="money"><span aria-hidden="true">＄</span> AI Money & Models</button>
         <button class="nav-link owner-only" data-view="safety"><span aria-hidden="true">⬡</span> Safety Catalog <b id="nav-safety-count">0</b></button>
       </nav>
       <div class="sidebar-bottom">
@@ -238,6 +239,29 @@
           <div id="builder-projects" class="kb-list"></div>
         </section>
 
+        <section class="view" id="view-money">
+          <div class="page-heading"><div><div class="eyebrow">CLEAR PATH MARKETS SCIENCE · AI ACADEMY</div><h1>AI Money & Models</h1><p>Make your own AI model, and learn real ways to earn with AI. Every money path can become a project with small steps.</p></div></div>
+          <div class="notice-box">Honest note: none of these are "get rich quick." They take real work. Be careful of anyone selling "AI trading bots with guaranteed returns" — that is the most common AI scam.</div>
+          <div class="builder-layout">
+            <nav class="panel builder-nav" aria-label="Model lessons"><p class="count-line">Make your own AI model</p><div id="money-lessons" class="builder-list"></div></nav>
+            <section class="panel builder-lesson" id="money-lesson" aria-live="polite"></section>
+          </div>
+          <section class="panel">
+            <h2>Training File Maker</h2>
+            <p class="resume-muted">Add a question and the answer YOU would give. Download the file and use it in lesson 4 to train your own model.</p>
+            <form id="training-form" class="stack-form">
+              <label class="brain-label" for="training-q">A question someone asks you</label>
+              <textarea class="brain-search" id="training-q" rows="2" maxlength="2000" placeholder="Example: What does Four Up, Three Down mean?"></textarea>
+              <label class="brain-label" for="training-a">Your answer</label>
+              <textarea class="brain-search" id="training-a" rows="4" maxlength="6000" placeholder="Write the answer the way you would teach it"></textarea>
+              <div class="brain-actions"><button class="primary-button" type="submit">Add example</button><button type="button" class="secondary-button" id="training-download">Download training file</button></div>
+              <p class="count-line" id="training-count" aria-live="polite"></p>
+            </form>
+          </section>
+          <div class="section-heading"><div><h2>Ways to earn with AI</h2><p>Pick one. Press "Make this my project" and it becomes a team workflow.</p></div></div>
+          <div id="money-paths" class="kb-list"></div>
+        </section>
+
         <section class="view" id="view-executive">
           <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · EXECUTIVE ORCHESTRATION</div><h1>Executive Brain</h1><p>Give your workforce a goal. It organizes the team, creates any specialist agents that are missing, and breaks every job into small steps.</p></div></div>
           <div class="executive-hero"><div class="brain-orb">◉</div><div><div class="eyebrow">YOUR CENTRAL COORDINATOR</div><h2>One request. A coordinated team.</h2><p>Example: "Help me start a small business." You stay the decision-maker.</p></div></div>
@@ -313,7 +337,7 @@
             <section class="panel settings-panel"><h2>How it looks</h2>
               <label class="setting-row"><span><strong>Text size</strong><small>Make everything bigger or smaller.</small></span><select id="font-scale"><option value="90">Smaller</option><option value="100">Normal</option><option value="115">Large</option><option value="130">Larger</option><option value="150">Largest</option></select></label>
               <label class="setting-row"><span><strong>Spacing</strong><small>More room between lines and letters can make reading easier.</small></span><select id="spacing"><option value="normal">Normal</option><option value="relaxed">Relaxed</option><option value="wide">Extra wide</option></select></label>
-              <label class="setting-row"><span><strong>Colors</strong><small>Pick the color style that feels best.</small></span><select id="theme"><option value="clearpath">ClearPath (signature colors)</option><option value="calm">Calm (soft, low glare)</option><option value="light">Light</option></select></label>
+              <label class="setting-row"><span><strong>Colors</strong><small>Pick the color style that feels best.</small></span><select id="theme"><option value="clearpath">Clear Path (signature colors)</option><option value="calm">Calm (soft, low glare)</option><option value="light">Light</option></select></label>
               <label class="setting-row"><span><strong>High contrast</strong><small>Stronger borders and brighter text.</small></span><input type="checkbox" id="high-contrast"></label>
               <label class="setting-row"><span><strong>Reduce motion</strong><small>Stop movement and animations.</small></span><input type="checkbox" id="reduce-motion"></label>
               <label class="setting-row"><span><strong>Simple Mode</strong><small>Hide extra detail.</small></span><input type="checkbox" id="simple-mode"></label>
@@ -324,7 +348,7 @@
           </div>
         </section>
       </div>
-      <footer class="footer"><span>CLEARPATH · AI COMMAND CENTER</span><span>People first. AI second. Always in your control.</span></footer>
+      <footer class="footer"><span>CLEAR PATH MARKETS SCIENCE · AI COMMAND CENTER</span><span>People first. AI second. Always in your control.</span></footer>
     </main>
   </div>
 
@@ -395,7 +419,7 @@
     <ul class="notice-list">
       <li>You do not need an account. We never ask your name.</li>
       <li>Your agents, tasks, and notes are saved in this browser on this device.</li>
-      <li><strong>Everything you type is recorded and checked for safety concerns.</strong> The ClearPath safety team may read it to make sure people are staying safe.</li>
+      <li><strong>Everything you type is recorded and checked for safety concerns.</strong> The Clear Path Markets Science safety team may read it to make sure people are staying safe.</li>
       <li>Do not type passwords, bank numbers, or Social Security numbers.</li>
       <li>If you are in danger, call 911. If you are thinking of hurting yourself, call or text 988.</li>
     </ul>
@@ -414,6 +438,7 @@
   <script src="./social.js" defer></script>
   <script src="./knowledge.js" defer></script>
   <script src="./builder.js" defer></script>
+  <script src="./money.js" defer></script>
   <script src="./safety.js" defer></script>
   <script src="./owner.js" defer></script>
 </body>

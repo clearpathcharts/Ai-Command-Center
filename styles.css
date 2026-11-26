@@ -374,3 +374,4 @@ body.theme-light .code-box code{color:#11131a}
 body.theme-light .code-head{background:#efe6ff;color:#4a1b85}
 body.theme-light .builder-where{background:#eef7fa;border-color:#9fcfdc}
 @media(max-width:900px){.builder-layout{grid-template-columns:1fr}}
+.brand-sub{display:block;font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:2px}

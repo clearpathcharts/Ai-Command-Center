@@ -34,7 +34,7 @@
     {id:"kb-forget",title:"Forgot which agents you made?",body:"Open My AI Agents and use the search box, or open the Agent Creator Brain and search. The app also warns you if you try to make an agent you already have. You can make as many agents as you need.",tags:"memory, agents, forget, search",createdAt:"2026-01-01T00:00:00.000Z"}
   ];
   const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],memories:[],handoffs:[],monitors:[],socialPosts:[],projects:[],knowledge:starterKnowledge,settings:defaultSettings};
-  const VIEW_NAMES = {builder:"Build Your Own App",social:"Social Media Studio",knowledge:"Knowledge Base",overview:"Overview",agents:"My AI Agents",brain:"Agent Creator Brain",executive:"Executive Brain",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings",workflows:"Team Workflows",safety:"Safety & Request Catalog"};
+  const VIEW_NAMES = {money:"AI Money & Models",builder:"Build Your Own App",social:"Social Media Studio",knowledge:"Knowledge Base",overview:"Overview",agents:"My AI Agents",brain:"Agent Creator Brain",executive:"Executive Brain",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings",workflows:"Team Workflows",safety:"Safety & Request Catalog"};
 
   // Words that mean an action reaches the outside world. Tasks containing them
   // automatically get an approval request so a person stays in control.

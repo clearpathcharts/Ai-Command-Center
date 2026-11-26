@@ -1,4 +1,4 @@
-# ClearPath AI Command Center
+# Clear Path Markets Science — AI Command Center
 
 A **free** AI workforce workspace built for people with disabilities — and usable by anyone.
 The software adapts to the person, not the other way around.
@@ -23,6 +23,7 @@ The software adapts to the person, not the other way around.
 | **Knowledge Base** | Your own how-to library. Its search box searches the whole workspace. |
 | **Accessibility settings** | Text size, spacing, color style (ClearPath signature, Calm, Light), high contrast, reduce motion, Simple Mode, read-aloud speed, voice typing everywhere. |
 | **Build Your Own App** | 10 lessons from the first line of code to pushing to GitHub, with copy buttons and read-aloud. Project starter files to download, and an agent that can write the app code (when AI is connected). |
+| **AI Money & Models** | 6 lessons for making your own AI model by fine-tuning a free open model, a Training File Maker that downloads a ready .jsonl file, and 7 real ways to earn with AI — each can become a team workflow in one click. |
 | **Safety Catalog** (owner only) | Every request and creation screened as Lower concern / Needs review / Urgent. Hidden from users; opens only when the server accepts the owner code. Users cannot delete entries. |
 
 **AI agents:** press "🤖 Agent: do this" on any task and the assigned agent writes a draft using AI. The server connects to **Groq** first (free plan, reported not to train on free-plan data), then **Google Gemini**, **OpenRouter** free models, and **xAI Grok** as backups. Keys stay on the server. Agents only write drafts — they never send, pay, post, sign, or delete. Crisis language is never sent to an AI company; the person gets 988/911 help instead. Every AI request is recorded in the safety catalog.

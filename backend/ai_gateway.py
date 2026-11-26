@@ -174,7 +174,7 @@ def _call(client: httpx.Client, provider: str, model: str, messages: list[dict],
     spec = PROVIDERS[provider]
     headers = {"Authorization": "Bearer " + os.environ[spec["key"]], "Content-Type": "application/json"}
     if provider == "openrouter":
-        headers["X-Title"] = "ClearPath AI Command Center"
+        headers["X-Title"] = "Clear Path Markets Science"
     body = {"model": model, "messages": messages, "temperature": 0.3, "max_tokens": max_tokens}
     try:
         res = client.post(spec["url"], json=body, headers=headers, timeout=40)

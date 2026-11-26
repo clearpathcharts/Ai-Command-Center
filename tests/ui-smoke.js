@@ -136,7 +136,7 @@ function check(ok, label) { console.log((ok ? "PASS " : "FAIL ") + label); if (!
 
   // 8c. Build Your Own App.
   await page.click('[data-view="builder"]');
-  check((await page.locator(".builder-step").count()) === 10, "app course has 10 lessons");
+  check((await page.locator("#builder-list .builder-step").count()) === 10, "app course has 10 lessons");
   await page.click("#builder-done");
   check((await page.textContent("#builder-lesson h2")).includes("folder"), "'I did this lesson' moves to the next lesson");
   await page.click('[data-lesson="8"]');
@@ -149,6 +149,21 @@ function check(ok, label) { console.log((ok ? "PASS " : "FAIL ") + label); if (!
   check(html.startsWith("<!doctype html>") && html.includes("Medicine Reminder"), "project starter file downloads as a working index.html");
   const cat2 = await page.evaluate(() => JSON.parse(localStorage.getItem("aicc-safety-request-catalog-v1")));
   check(cat2.some(e => e.source === "App Builder project"), "app projects are recorded in the safety catalog");
+
+  // 8d. AI Money & Models.
+  await page.click('[data-view="money"]');
+  check((await page.locator("#money-lessons .builder-step").count()) === 6, "model course has 6 lessons");
+  await page.fill("#training-q", "What does Four Up, Three Down mean?");
+  await page.fill("#training-a", "It is a pattern-based trading method.");
+  await page.click("#training-form button[type=submit]");
+  const [tdl] = await Promise.all([page.waitForEvent("download"), page.click("#training-download")]);
+  const line = JSON.parse(require("fs").readFileSync(await tdl.path(), "utf8").trim());
+  check(line.messages[0].role === "user" && line.messages[1].content.includes("trading method"), "training file downloads in the correct format");
+  const wfBefore = (await S()).workflows.length;
+  await page.click('[data-money-path="grants"]');
+  s = await S();
+  check(s.workflows.length === wfBefore + 1 && s.tasks.some(t => t.title.includes("disability, accessibility")), "money path becomes a team workflow with tasks");
+  check((await page.title()) === "Clear Path Markets Science", "site is branded Clear Path Markets Science");
 
   // 9. Intelligence Engine tools.
   await page.click('[data-view="intelligence"]');
