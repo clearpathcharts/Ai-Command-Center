@@ -77,3 +77,20 @@ def test_owner_pin_works_and_locks_after_wrong_tries(tmp_path, monkeypatch):
         # Locked now — even the right code is refused for 15 minutes.
         assert c.get("/api/admin/safety", headers={"X-Admin-Token": "654321"}).status_code == 429
     safety_api._failed_by_ip.clear(); safety_api._failed_all.clear()
+
+
+def test_website_pages_are_served_but_source_is_not(tmp_path, monkeypatch):
+    with client(tmp_path, monkeypatch) as c:
+        home = c.get("/")
+        assert home.status_code == 200 and "Clear Path Markets Science" in home.text
+        assert c.get("/app.js").status_code == 200
+        assert c.get("/styles.css").status_code == 200
+        assert c.get("/admin").status_code == 200
+        for secret in ["main.py", "safety_api.py", ".env", "README.md", "app.py", "requirements.txt", "..%2Fbackend%2Fmain.py"]:
+            assert c.get("/" + secret).status_code == 404, secret
+        assert c.get("/health").json()["status"] == "ok"
+
+
+def test_root_requirements_match_backend():
+    root = Path(__file__).resolve().parents[2]
+    assert (root / "requirements.txt").read_text() == (root / "backend" / "requirements.txt").read_text()

@@ -640,3 +640,48 @@ def complete_agent_job(item: AgentJobCompletion, _worker=Depends(require_worker_
         if result.rowcount == 0:
             raise HTTPException(404, "Active job not found")
     return {"id": item.id, "status": status}
+
+
+# ---------------------------------------------------------------------------
+# Website pages. The same server hands out the website, so the whole
+# platform lives at ONE address and the pages can talk to the API safely.
+# Only the listed public files are served — never source code or settings.
+# ---------------------------------------------------------------------------
+from fastapi.responses import FileResponse, HTMLResponse
+
+WEB_DIR_CANDIDATES = [APP_DIR.parent, APP_DIR / "web"]
+WEB_DIR = next((d for d in WEB_DIR_CANDIDATES if (d / "index.html").is_file()), None)
+PUBLIC_FILES = {
+    "index.html", "admin.html", "styles.css", "config.js", "app.js", "brain.js", "memory.js",
+    "executive.js", "assist.js", "ai.js", "intelligence.js", "social.js", "knowledge.js",
+    "builder.js", "money.js", "safety.js", "owner.js",
+}
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(self), geolocation=()",
+    "Cache-Control": "no-cache",
+}
+
+
+def _web_file(name: str):
+    if WEB_DIR is None or name not in PUBLIC_FILES or not (WEB_DIR / name).is_file():
+        raise HTTPException(404, "Not found")
+    return FileResponse(WEB_DIR / name, headers=SECURITY_HEADERS)
+
+
+@app.get("/", include_in_schema=False)
+def website_home():
+    if WEB_DIR is None:
+        return HTMLResponse("<h1>Clear Path Markets Science</h1><p>The server is running.</p>")
+    return _web_file("index.html")
+
+
+@app.get("/admin", include_in_schema=False)
+def website_admin():
+    return _web_file("admin.html")
+
+
+@app.get("/{name}", include_in_schema=False)
+def website_file(name: str):
+    return _web_file(name)
