@@ -67,6 +67,10 @@ Save the file.
 
 Until Step 2 is done, the Safety Catalog page in the app says "Central reporting is OFF" and entries stay on each device.
 
+## Permanent safety storage
+
+On Vercel the server can only write to a temporary folder, so safety reports need a permanent database. Connect a free **Neon Postgres** database to the project (Vercel → Storage → Create Database → Neon). Vercel adds `DATABASE_URL` automatically and the server starts using it on the next deploy. Check it at `/api/safety/status` — it should say `"permanent": true`.
+
 ## Connecting AI companies
 
 Add one or more of these keys in the **server's** settings (never in `config.js`, never in chat):
