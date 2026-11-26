@@ -60,6 +60,7 @@
     const $ = s => document.querySelector(s);
     let token = "", base = "", device = "";
     try { base = localStorage.getItem("aicc-admin-server") || ""; } catch {}
+    if (!base && /^https?:$/.test(location.protocol)) base = location.origin;
     $("#server").value = base;
     const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
     const say = m => { $("#message").innerHTML = m ? '<p class="msg">' + esc(m) + '</p>' : ""; };

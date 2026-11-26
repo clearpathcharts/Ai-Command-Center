@@ -13,6 +13,8 @@ window.AICC_CONFIG = {
 };
 (function(){
   var base = String(window.AICC_CONFIG.serverAddress || "").trim().replace(/\/+$/, "");
+  // When the website is served by the Clear Path server itself, use the same address automatically.
+  if (!base && /^https?:$/.test(location.protocol) && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") base = location.origin;
   window.AICC_CONFIG.safetyReportUrl = window.AICC_CONFIG.safetyReportUrl || (base ? base + "/api/safety/report" : "");
   window.AICC_CONFIG.aiChatUrl = base ? base + "/api/ai/chat" : "";
   window.AICC_CONFIG.aiStatusUrl = base ? base + "/api/ai/providers" : "";
