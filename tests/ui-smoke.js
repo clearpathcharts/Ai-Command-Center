@@ -5,7 +5,7 @@
  */
 const path = require("path");
 const { chromium } = require("playwright");
-const URL = "file://" + path.resolve(__dirname, "..", "index.html");
+const URL = "file://" + path.resolve(__dirname, "..", "backend", "web", "index.html");
 let failures = 0;
 function check(ok, label) { console.log((ok ? "PASS " : "FAIL ") + label); if (!ok) failures++; }
 

@@ -27,7 +27,8 @@ APP_DIR = Path(__file__).resolve().parent
 WRITABLE_DIR = Path(tempfile.gettempdir()) if os.getenv("VERCEL") else APP_DIR
 DB_PATH = Path(os.getenv("DATABASE_PATH", str(WRITABLE_DIR / "workspace.db")))
 
-app = FastAPI(title="Accessible AI Command Center API", version="0.1.0")
+# The public API map (/docs) is turned off so strangers cannot browse the server.
+app = FastAPI(title="Accessible AI Command Center API", version="0.1.0", docs_url=None, redoc_url=None, openapi_url=None)
 allowed_origins = [x.strip() for x in os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",") if x.strip()]
 app.add_middleware(
     CORSMiddleware,
@@ -649,7 +650,7 @@ def complete_agent_job(item: AgentJobCompletion, _worker=Depends(require_worker_
 # ---------------------------------------------------------------------------
 from fastapi.responses import FileResponse, HTMLResponse
 
-WEB_DIR_CANDIDATES = [APP_DIR.parent, APP_DIR / "web"]
+WEB_DIR_CANDIDATES = [APP_DIR / "web", APP_DIR.parent]
 WEB_DIR = next((d for d in WEB_DIR_CANDIDATES if (d / "index.html").is_file()), None)
 PUBLIC_FILES = {
     "index.html", "admin.html", "styles.css", "config.js", "app.js", "brain.js", "memory.js",

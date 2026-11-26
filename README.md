@@ -8,6 +8,11 @@ The software adapts to the person, not the other way around.
 - **Built for memory challenges.** The app warns you before you make an agent you already have, keeps a searchable memory, and gives a "What was I doing?" recap.
 - **Mandatory safety catalog.** Everything typed is recorded and screened. People are told this on their first visit. Urgent language shows crisis help (988) right away.
 
+## Where the files are
+
+- `backend/web/` — the website pages (open `backend/web/index.html` in a browser to try it on one device).
+- `backend/` — the server. It also hands out the website, so the whole platform lives at one address.
+
 ## What is inside
 
 | Area | What it does |

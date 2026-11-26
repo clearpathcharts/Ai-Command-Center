@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
       - name: Check frontend JavaScript syntax
         run: |
-          for f in *.js tests/*.js; do node --check "$f"; done
+          for f in backend/web/*.js tests/*.js; do node --check "$f"; done
       - name: Check Python syntax
         run: python -m compileall -q backend
       - name: Install backend test dependencies

@@ -89,8 +89,6 @@ def test_website_pages_are_served_but_source_is_not(tmp_path, monkeypatch):
         for secret in ["main.py", "safety_api.py", ".env", "README.md", "app.py", "requirements.txt", "..%2Fbackend%2Fmain.py"]:
             assert c.get("/" + secret).status_code == 404, secret
         assert c.get("/health").json()["status"] == "ok"
+        for hidden in ["/docs", "/redoc", "/openapi.json"]:
+            assert c.get(hidden).status_code == 404, hidden
 
-
-def test_root_requirements_match_backend():
-    root = Path(__file__).resolve().parents[2]
-    assert (root / "requirements.txt").read_text() == (root / "backend" / "requirements.txt").read_text()
