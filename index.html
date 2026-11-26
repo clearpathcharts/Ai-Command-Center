@@ -3,52 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#090d18">
-  <meta name="description" content="An accessible AI workforce command center. Create agents, organize departments, and coordinate work with human control.">
-  <title>Accessible AI Command Center</title>
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="A free, accessible AI workforce command center by Clear Path Markets Science. Create unlimited agents, organize departments, and coordinate work — with you always in control.">
+  <title>Clear Path Markets Science</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body class="theme-clearpath">
   <a class="skip-link" href="#main">Skip to main content</a>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">✦</div>
-        <div><strong>AI COMMAND</strong><span>CENTER</span></div>
+        <div><strong>CLEAR PATH</strong><span>MARKETS SCIENCE</span><small class="brand-sub">AI Command Center</small></div>
       </div>
       <div class="workspace-label">YOUR WORKSPACE</div>
       <nav aria-label="Main navigation">
-        <button class="nav-link active" data-view="overview"><span>⌂</span> Overview</button>
-        <button class="nav-link" data-view="agents"><span>◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
-        <button class="nav-link" data-view="brain"><span>✧</span> Agent Creator Brain</button>
-        <button class="nav-link" data-view="executive"><span>◉</span> Executive Brain</button>
-        <button class="nav-link" data-view="departments"><span>▦</span> Departments</button>
-        <button class="nav-link" data-view="tasks"><span>☷</span> Tasks & Projects</button>
-        <button class="nav-link" data-view="workflows"><span>⤳</span> Team Workflows</button>
-        <button class="nav-link" data-view="approvals"><span>✓</span> Approval Center <b id="nav-approval-count">0</b></button>
-        <button class="nav-link" data-view="intelligence"><span>⌕</span> Intelligence Engine</button>
-        <button class="nav-link" data-view="safety"><span>⬡</span> Safety & Request Catalog <b id="nav-safety-count">0</b></button>
+        <button class="nav-link active" data-view="overview"><span aria-hidden="true">⌂</span> Overview</button>
+        <button class="nav-link" data-view="agents"><span aria-hidden="true">◈</span> My AI Agents <b id="nav-agent-count">0</b></button>
+        <button class="nav-link" data-view="brain"><span aria-hidden="true">✧</span> Agent Creator Brain</button>
+        <button class="nav-link" data-view="executive"><span aria-hidden="true">◉</span> Executive Brain</button>
+        <button class="nav-link" data-view="departments"><span aria-hidden="true">▦</span> Departments</button>
+        <button class="nav-link" data-view="tasks"><span aria-hidden="true">☷</span> Tasks & Projects</button>
+        <button class="nav-link" data-view="workflows"><span aria-hidden="true">⤳</span> Team Workflows</button>
+        <button class="nav-link" data-view="approvals"><span aria-hidden="true">✓</span> Approval Center <b id="nav-approval-count">0</b></button>
+        <button class="nav-link" data-view="intelligence"><span aria-hidden="true">⌕</span> Intelligence Engine</button>
+        <button class="nav-link" data-view="social"><span aria-hidden="true">✉</span> Social Media Studio</button>
+        <button class="nav-link" data-view="knowledge"><span aria-hidden="true">▤</span> Knowledge Base</button>
+        <button class="nav-link" data-view="builder"><span aria-hidden="true">⌨</span> Build Your Own App</button>
+        <button class="nav-link" data-view="money"><span aria-hidden="true">＄</span> AI Money & Models</button>
+        <button class="nav-link owner-only" data-view="safety"><span aria-hidden="true">⬡</span> Safety Catalog <b id="nav-safety-count">0</b></button>
       </nav>
       <div class="sidebar-bottom">
-        <div class="safety-note"><span class="status-dot"></span><div><strong>You are in control</strong><small>Agents need approval for important actions.</small></div></div>
-        <button class="nav-link" data-view="settings"><span>⚙</span> Accessibility & Settings</button>
-        <div class="user-chip"><div class="avatar">U</div><div><strong>Your workspace</strong><small>Personal command center</small></div></div>
+        <div class="safety-note"><span class="status-dot"></span><div><strong>You are in control</strong><small>Nothing is sent, paid, or posted without your yes.</small></div></div>
+        <button class="nav-link" data-view="settings"><span aria-hidden="true">⚙</span> Accessibility & Settings</button>
       </div>
     </aside>
 
     <main id="main" class="main-area">
       <header class="topbar">
-        <button class="icon-button mobile-menu" id="menu-toggle" aria-label="Open navigation">☰</button>
+        <button class="icon-button mobile-menu" id="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
         <div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-current">Overview</strong></div>
         <div class="top-actions">
+          <button class="rescue-button" data-rescue-open>✦ I'm overwhelmed</button>
+          <button class="quiet-button" id="read-page" title="Read this page out loud">🔊 Read page</button>
+          <button class="quiet-button" id="stop-reading" title="Stop reading out loud">■ Stop</button>
           <button class="quiet-button" id="focus-toggle" aria-pressed="false">◉ Focus mode</button>
           <button class="primary-button small" data-action="new-agent">＋ Create agent</button>
         </div>
       </header>
       <div class="content">
+        <section id="focus-panel" class="focus-panel" aria-live="polite"></section>
+
         <section class="view active" id="view-overview">
           <div class="welcome-row">
-            <div><div class="eyebrow">YOUR AI WORKFORCE</div><h1>Your command center.</h1><p class="subheading">Tell your team what you need. Your agents help carry the work.</p></div>
+            <div><div class="eyebrow">YOUR AI WORKFORCE</div><h1>Your command center.</h1><p class="subheading">You give the direction. Your AI workforce helps carry the work.</p></div>
             <div class="date-chip" id="today-label">YOUR WORKSPACE</div>
           </div>
           <section class="command-panel" aria-labelledby="command-title">
@@ -56,10 +64,10 @@
             <div class="command-heading"><div class="orb">✦</div><div><span class="eyebrow">EXECUTIVE ASSISTANT</span><h2 id="command-title">What would you like help with?</h2></div></div>
             <form id="command-form" class="command-form">
               <label class="sr-only" for="command-input">Describe what you need help with</label>
-              <textarea id="command-input" rows="2" placeholder="Tell your AI workforce what you need done. Use everyday language..."></textarea>
-              <div class="command-controls"><div class="hint">Your request becomes a task you can assign and track.</div><div class="command-buttons"><button type="button" class="quiet-button" id="voice-button" title="Use speech recognition">🎙 Voice</button><button class="primary-button" type="submit">Create task <span>→</span></button></div></div>
+              <textarea id="command-input" rows="2" placeholder="Tell your AI workforce what you need done. Use everyday words..."></textarea>
+              <div class="command-controls"><div class="hint">Your request becomes a task, already broken into small steps.</div><div class="command-buttons"><button type="button" class="quiet-button" id="voice-button">🎙 Speak</button><button class="primary-button" type="submit">Create task <span>→</span></button></div></div>
             </form>
-            <div class="quick-prompts"><button data-prompt="Research this topic and summarize the most reliable sources.">Research something</button><button data-prompt="Help me organize my business paperwork into clear steps.">Organize paperwork</button><button data-prompt="Help me plan and create a marketing campaign.">Plan a campaign</button><button data-prompt="Break this goal into small manageable tasks.">Break down a goal</button></div>
+            <div class="quick-prompts"><button data-prompt="Research this topic and summarize the most reliable sources.">Research something</button><button data-prompt="Help me organize my paperwork into clear steps.">Organize paperwork</button><button data-prompt="Help me start a small business.">Start a business</button><button data-prompt="Break this goal into small manageable tasks.">Break down a goal</button></div>
           </section>
           <div class="section-heading"><div><h2>Workforce at a glance</h2><p>Your activity and progress</p></div><button class="text-button" data-view-link="agents">Manage agents →</button></div>
           <div class="stats-grid">
@@ -72,13 +80,16 @@
             <section class="panel"><div class="panel-heading"><div><h2>Active work</h2><p>Tasks across your departments</p></div><button class="text-button" data-view-link="tasks">View all →</button></div><div id="overview-tasks" class="task-list"></div></section>
             <section class="panel"><div class="panel-heading"><div><h2>Your departments</h2><p>Organize agents by responsibility</p></div><button class="text-button" data-view-link="departments">View all →</button></div><div id="overview-departments" class="department-list"></div></section>
           </div>
-          <div class="human-control"><span>✦</span><div><strong>Human-first AI, by design</strong><p>Your agents can prepare and recommend. You approve consequential actions. You can pause or change assignments at any time.</p></div></div>
+          <div class="human-control"><span>✦</span><div><strong>Human-first AI, by design</strong><p>Your agents prepare and recommend. You approve anything that sends, pays, publishes, signs, or deletes. You can pause or change assignments any time.</p></div></div>
         </section>
 
         <section class="view" id="view-agents">
-          <div class="page-heading"><div><div class="eyebrow">AGENT FACTORY</div><h1>My AI agents</h1><p>Create a team of specialized assistants. You decide their jobs and permissions.</p></div><button class="primary-button" data-action="new-agent">＋ Create an agent</button></div>
-          <div class="filter-row"><label class="search-box">⌕ <input id="agent-search" placeholder="Search your agents..." aria-label="Search agents"></label><select id="agent-department-filter" aria-label="Filter by department"><option value="">All departments</option></select></div>
+          <div class="page-heading"><div><div class="eyebrow">AGENT FACTORY</div><h1>My AI agents</h1><p>Make as many agents as you need — one or thousands. The app reminds you if you already made one.</p></div><button class="primary-button" data-action="new-agent">＋ Create an agent</button></div>
+          <div class="filter-row"><label class="search-box">⌕ <input id="agent-search" type="search" placeholder="Search your agents..." aria-label="Search agents"></label><select id="agent-department-filter" aria-label="Filter by department"><option value="">All departments</option></select><button class="secondary-button" id="org-toggle" aria-expanded="false" aria-controls="org-chart">Show team chart</button></div>
+          <p class="count-line" id="agent-count-line" aria-live="polite"></p>
+          <section class="panel org-chart" id="org-chart" hidden></section>
           <div id="agent-grid" class="agent-grid"></div>
+          <button class="secondary-button wide" id="agent-more" hidden>Show more agents</button>
         </section>
 
         <section class="view" id="view-departments">
@@ -87,96 +98,257 @@
         </section>
 
         <section class="view" id="view-tasks">
-          <div class="page-heading"><div><div class="eyebrow">WORK MANAGEMENT</div><h1>Tasks & projects</h1><p>See what is planned, in progress, and completed.</p></div><button class="primary-button" data-action="new-task">＋ Create a task</button></div>
-          <div class="task-filters"><button class="filter-chip selected" data-task-filter="all">All tasks</button><button class="filter-chip" data-task-filter="todo">To do</button><button class="filter-chip" data-task-filter="inprogress">In progress</button><button class="filter-chip" data-task-filter="done">Completed</button></div>
+          <div class="page-heading"><div><div class="eyebrow">WORK MANAGEMENT</div><h1>Tasks & projects</h1><p>See what is planned, in progress, and completed. Open "Small steps" to tick off one piece at a time.</p></div><button class="primary-button" data-action="new-task">＋ Create a task</button></div>
+          <div class="task-filters"><button class="filter-chip selected" data-task-filter="all" aria-pressed="true">All tasks</button><button class="filter-chip" data-task-filter="todo" aria-pressed="false">To do</button><button class="filter-chip" data-task-filter="inprogress" aria-pressed="false">In progress</button><button class="filter-chip" data-task-filter="done" aria-pressed="false">Completed</button></div>
           <div id="task-board" class="task-board"></div>
         </section>
 
         <section class="view" id="view-workflows">
-          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · WORKFLOW BUILDER</div><h1>Team workflows</h1><p>Turn a goal into coordinated steps and assign each step to the right agent. You stay in charge of every action.</p></div><button class="primary-button" data-action="new-workflow">＋ Build a workflow</button></div>
-          <div class="notice-box">Workflow plans are generated from built-in templates in this release. Agents do not yet execute tasks or call AI models; this page organizes work for your review.</div>
+          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · WORKFLOW BUILDER</div><h1>Team workflows</h1><p>Turn a goal into coordinated steps, each assigned to the right agent. Press "Run step by step" to walk through it one step at a time.</p></div><button class="primary-button" data-action="new-workflow">＋ Build a workflow</button></div>
+          <div class="notice-box">Workflows organize the work, assign it, and walk you through it. On any task, press "🤖 Agent: do this" and the assigned agent writes a draft using AI (when AI is connected). Agents only write drafts — anything that sends, pays, or publishes waits for your approval.</div>
           <div id="workflow-list" class="workflow-list"></div>
         </section>
 
         <section class="view" id="view-approvals">
-          <div class="page-heading"><div><div class="eyebrow">HUMAN OVERSIGHT</div><h1>Approval center</h1><p>Review consequential actions before an agent can proceed.</p></div></div>
-          <div class="notice-box">Your agents cannot send, publish, purchase, delete, or make other consequential changes without your approval.</div>
+          <div class="page-heading"><div><div class="eyebrow">HUMAN OVERSIGHT</div><h1>Approval center</h1><p>Review important actions before anything happens.</p></div></div>
+          <div class="notice-box">Tasks that would send, pay, publish, book, sign, or delete something stop here and wait for you. Approving does not send anything automatically — it lets you move the task forward.</div>
           <div id="approval-list" class="approval-list"></div>
         </section>
 
         <section class="view" id="view-intelligence">
-          <div class="page-heading"><div><div class="eyebrow">RESEARCH & VERIFICATION</div><h1>Intelligence engine</h1><p>A workspace for research, source checking, and clear reporting.</p></div></div>
-          <div class="feature-grid">
-            <article class="feature-card"><div class="feature-icon">⌕</div><h3>Research desk</h3><p>Organize research requests and assign them to an agent. Live web research requires a connected search provider.</p><button class="secondary-button" data-action="research-task">Create research task</button></article>
-            <article class="feature-card"><div class="feature-icon">✓</div><h3>Source verification</h3><p>Record source links, publication dates, claims, and verification notes for human review.</p><button class="secondary-button" data-action="verification-task">Create verification task</button></article>
-            <article class="feature-card"><div class="feature-icon">⚑</div><h3>Risk review</h3><p>Collect warning signs and evidence. Risk signals are prompts for review, not proof of fraud.</p><button class="secondary-button" data-action="risk-task">Create risk review</button></article>
+          <div class="page-heading"><div><div class="eyebrow">RESEARCH & VERIFICATION</div><h1>Intelligence engine</h1><p>Tools for research, checking sources, spotting scams, reading documents, sorting information, reports, and check-ins. Pick one tool at a time.</p></div></div>
+          <div class="intel-tabs" id="intel-tabs" role="tablist" aria-label="Intelligence tools">
+            <button class="filter-chip" role="tab" data-intel-tab="research" aria-controls="intel-research">⌕ Research</button>
+            <button class="filter-chip" role="tab" data-intel-tab="source" aria-controls="intel-source">✓ Check a website</button>
+            <button class="filter-chip" role="tab" data-intel-tab="scam" aria-controls="intel-scam">⚑ Scam checker</button>
+            <button class="filter-chip" role="tab" data-intel-tab="doc" aria-controls="intel-doc">▤ Read a document</button>
+            <button class="filter-chip" role="tab" data-intel-tab="classify" aria-controls="intel-classify">▦ Sort a list</button>
+            <button class="filter-chip" role="tab" data-intel-tab="report" aria-controls="intel-report">◔ Report</button>
+            <button class="filter-chip" role="tab" data-intel-tab="monitor" aria-controls="intel-monitor">◷ Check-ins</button>
           </div>
-          <div class="notice-box">This release provides task organization only. It does not yet browse the web, verify claims automatically, or make fraud determinations.</div>
+          <section class="panel intel-tool" id="intel-research" role="tabpanel">
+            <h2>Research desk</h2><p>Type a topic. You get trusted places to look, opened in new tabs.</p>
+            <label class="brain-label" for="intel-research-topic">What do you want to learn about?</label>
+            <input class="brain-search" id="intel-research-topic" placeholder="Example: how to apply for disability benefits">
+            <div class="brain-actions"><button class="primary-button" id="intel-research-go">Find sources</button><button class="quiet-button" id="intel-research-voice">🎙 Speak</button></div>
+            <div class="intel-out" id="intel-research-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-source" role="tabpanel" hidden>
+            <h2>Check a website address</h2><p>Paste a link. We check the address for common warning signs — before you click it.</p>
+            <label class="brain-label" for="intel-source-url">Website address</label>
+            <input class="brain-search" id="intel-source-url" placeholder="Example: https://www.ssa.gov">
+            <div class="brain-actions"><button class="primary-button" id="intel-source-go">Check this address</button></div>
+            <div class="intel-out" id="intel-source-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-scam" role="tabpanel" hidden>
+            <h2>Scam & fraud checker</h2><p>Paste a text message, email, or offer. We look for common scam warning signs.</p>
+            <label class="brain-label" for="intel-scam-text">The message</label>
+            <textarea class="brain-search" id="intel-scam-text" rows="5" placeholder="Paste the message here"></textarea>
+            <div class="brain-actions"><button class="primary-button" id="intel-scam-go">Check for warning signs</button><button class="quiet-button" id="intel-scam-voice">🎙 Speak</button></div>
+            <div class="intel-out" id="intel-scam-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-doc" role="tabpanel" hidden>
+            <h2>Read a document for me</h2><p>Paste the text of a letter, form, or bill. We pull out the deadlines, dates, money, and contacts.</p>
+            <label class="brain-label" for="intel-doc-text">Document text</label>
+            <textarea class="brain-search" id="intel-doc-text" rows="7" placeholder="Paste the document text here"></textarea>
+            <div class="brain-actions"><button class="primary-button" id="intel-doc-go">Find the important parts</button><button class="secondary-button" id="intel-doc-explain">🤖 Explain it in simple words</button></div>
+            <div class="intel-out" id="intel-doc-ai" hidden aria-live="polite"></div>
+            <div class="intel-out" id="intel-doc-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-classify" role="tabpanel" hidden>
+            <h2>Sort a messy list</h2><p>Paste or say a list — one thing per line. We sort it into groups like money, health, and paperwork.</p>
+            <label class="brain-label" for="intel-classify-text">Your list</label>
+            <textarea class="brain-search" id="intel-classify-text" rows="7" placeholder="pay electric bill&#10;call mom&#10;dentist appointment&#10;renew license"></textarea>
+            <div class="brain-actions"><button class="primary-button" id="intel-classify-go">Sort my list</button><button class="quiet-button" id="intel-classify-voice">🎙 Speak</button></div>
+            <div class="intel-out" id="intel-classify-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-report" role="tabpanel" hidden>
+            <h2>Workspace report</h2><p>A plain summary of your progress, your agents, and your departments.</p>
+            <div class="brain-actions"><button class="primary-button" id="intel-report-go">Make my report</button></div>
+            <div class="intel-out" id="intel-report-out" hidden aria-live="polite"></div>
+          </section>
+          <section class="panel intel-tool" id="intel-monitor" role="tabpanel" hidden>
+            <h2>Scheduled check-ins</h2><p>Set something to check on regularly. When it is due, a task appears for you. Works while this site is open in your browser.</p>
+            <form id="intel-monitor-form" class="stack-form">
+              <label class="brain-label" for="intel-monitor-title">What should be checked?</label>
+              <input class="brain-search" id="intel-monitor-title" required maxlength="160" placeholder="Example: check my bank account for strange charges">
+              <div class="form-row">
+                <label class="brain-label">Start time<input class="brain-search" id="intel-monitor-when" type="datetime-local" required></label>
+                <label class="brain-label">How often<select id="intel-monitor-frequency"><option value="once">Just once</option><option value="hourly">Every hour</option><option value="daily" selected>Every day</option><option value="weekly">Every week</option></select></label>
+                <label class="brain-label">Give it to<select id="intel-monitor-agent"></select></label>
+              </div>
+              <button class="primary-button" type="submit">Schedule check-in</button>
+            </form>
+            <div id="intel-monitor-list" class="monitor-list"></div>
+          </section>
+        </section>
+
+        <section class="view" id="view-social">
+          <div class="page-heading"><div><div class="eyebrow">SOCIAL MEDIA MODULE</div><h1>Social Media Studio</h1><p>Write posts, check they fit each platform, plan when to post, and approve them. This app never posts for you.</p></div></div>
+          <section class="panel">
+            <form id="social-form" class="stack-form">
+              <div class="form-row">
+                <label class="brain-label">Platform<select id="social-platform"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="x">X (Twitter)</option><option value="threads">Threads</option><option value="bluesky">Bluesky</option><option value="linkedin">LinkedIn</option><option value="tiktok">TikTok caption</option><option value="youtube">YouTube description</option></select></label>
+                <label class="brain-label">Plan to post on (optional)<input class="brain-search" id="social-when" type="datetime-local"></label>
+              </div>
+              <label class="brain-label" for="social-text">Your post</label>
+              <textarea class="brain-search" id="social-text" rows="5" placeholder="Write or say your post"></textarea>
+              <p class="char-count" id="social-count" aria-live="polite"></p>
+              <div class="brain-actions"><button class="primary-button" type="submit">Save draft</button><button type="button" class="quiet-button" id="social-voice">🎙 Speak</button></div>
+            </form>
+          </section>
+          <div class="section-heading"><div><h2>Your posts</h2><p>Sorted by planned date</p></div></div>
+          <div id="social-list" class="social-list"></div>
+        </section>
+
+        <section class="view" id="view-knowledge">
+          <div class="page-heading"><div><div class="eyebrow">SEARCHABLE KNOWLEDGE BASE</div><h1>Knowledge Base</h1><p>Your library of instructions and how-tos. The search box finds anything in your whole workspace.</p></div></div>
+          <label class="search-box big-search">⌕ <input id="kb-search" type="search" placeholder="Search everything: articles, agents, tasks, memories..." aria-label="Search everything"></label>
+          <section id="kb-results" class="panel kb-results" hidden aria-live="polite"></section>
+          <section class="panel">
+            <h2>Add an article</h2>
+            <form id="kb-form" class="stack-form">
+              <label class="brain-label">Title<input class="brain-search" id="kb-title" maxlength="160" placeholder="Example: How I pay my rent"></label>
+              <label class="brain-label" for="kb-body">What should be remembered?</label>
+              <textarea class="brain-search" id="kb-body" rows="4" placeholder="Write the steps or information"></textarea>
+              <label class="brain-label">Tags (words to help find it, separated by commas)<input class="brain-search" id="kb-tags" maxlength="200" placeholder="rent, money, monthly"></label>
+              <div class="brain-actions"><button class="primary-button" type="submit">Save article</button><button type="button" class="quiet-button" id="kb-voice">🎙 Speak</button></div>
+            </form>
+          </section>
+          <div id="kb-list" class="kb-list"></div>
+        </section>
+
+        <section class="view" id="view-builder">
+          <div class="page-heading"><div><div class="eyebrow">LEARN TO BUILD · FIRST LINE OF CODE TO GITHUB</div><h1>Build Your Own App</h1><p>Make your own website or app, one small lesson at a time. Every step tells you exactly where to type and what to copy.</p></div></div>
+          <div class="builder-layout">
+            <nav class="panel builder-nav" aria-label="Lessons"><p class="count-line" id="builder-progress"></p><div id="builder-list" class="builder-list"></div></nav>
+            <section class="panel builder-lesson" id="builder-lesson" aria-live="polite"></section>
+          </div>
+          <section class="panel">
+            <h2>Start a project</h2>
+            <p class="resume-muted">Describe your app idea. You get a working starter file to download, or an agent can write the code for you.</p>
+            <form id="builder-form" class="stack-form">
+              <label class="brain-label">App name<input class="brain-search" id="builder-name" maxlength="80" placeholder="Example: My Medicine Reminder"></label>
+              <label class="brain-label" for="builder-idea">What should it do?</label>
+              <textarea class="brain-search" id="builder-idea" rows="3" maxlength="1500" placeholder="Example: A list where I write which medicine I took and when."></textarea>
+              <label class="brain-label">Main color<select id="builder-color"><option value="#00FFFF">Electric Cyan</option><option value="#FF1493">Fluorescent Pink</option><option value="#B026FF">Neon Purple</option><option value="#00A8FF">Electric Blue</option><option value="#FF7B00">Neon Orange</option><option value="#39FF14">Neon Lime</option></select></label>
+              <div class="brain-actions"><button class="primary-button" type="submit">Save project</button><button type="button" class="quiet-button" id="builder-voice">🎙 Speak my idea</button></div>
+            </form>
+          </section>
+          <div class="section-heading"><div><h2>Your projects</h2></div></div>
+          <div id="builder-projects" class="kb-list"></div>
+        </section>
+
+        <section class="view" id="view-money">
+          <div class="page-heading"><div><div class="eyebrow">CLEAR PATH MARKETS SCIENCE · AI ACADEMY</div><h1>AI Money & Models</h1><p>Make your own AI model, and learn real ways to earn with AI. Every money path can become a project with small steps.</p></div></div>
+          <div class="notice-box">Honest note: none of these are "get rich quick." They take real work. Be careful of anyone selling "AI trading bots with guaranteed returns" — that is the most common AI scam.</div>
+          <div class="builder-layout">
+            <nav class="panel builder-nav" aria-label="Model lessons"><p class="count-line">Make your own AI model</p><div id="money-lessons" class="builder-list"></div></nav>
+            <section class="panel builder-lesson" id="money-lesson" aria-live="polite"></section>
+          </div>
+          <section class="panel">
+            <h2>Training File Maker</h2>
+            <p class="resume-muted">Add a question and the answer YOU would give. Download the file and use it in lesson 4 to train your own model.</p>
+            <form id="training-form" class="stack-form">
+              <label class="brain-label" for="training-q">A question someone asks you</label>
+              <textarea class="brain-search" id="training-q" rows="2" maxlength="2000" placeholder="Example: What does Four Up, Three Down mean?"></textarea>
+              <label class="brain-label" for="training-a">Your answer</label>
+              <textarea class="brain-search" id="training-a" rows="4" maxlength="6000" placeholder="Write the answer the way you would teach it"></textarea>
+              <div class="brain-actions"><button class="primary-button" type="submit">Add example</button><button type="button" class="secondary-button" id="training-download">Download training file</button></div>
+              <p class="count-line" id="training-count" aria-live="polite"></p>
+            </form>
+          </section>
+          <div class="section-heading"><div><h2>Ways to earn with AI</h2><p>Pick one. Press "Make this my project" and it becomes a team workflow.</p></div></div>
+          <div id="money-paths" class="kb-list"></div>
         </section>
 
         <section class="view" id="view-executive">
-          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · EXECUTIVE ORCHESTRATION</div><h1>Executive Brain</h1><p>Give your workforce a goal. Review the proposed team plan, then approve the tasks you want created.</p></div></div>
-          <div class="executive-hero"><div class="brain-orb">◉</div><div><div class="eyebrow">YOUR CENTRAL COORDINATOR</div><h2>One request. A coordinated team.</h2><p>The Executive Brain organizes work across your departments and agents. You remain the decision-maker.</p></div></div>
+          <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · EXECUTIVE ORCHESTRATION</div><h1>Executive Brain</h1><p>Give your workforce a goal. It organizes the team, creates any specialist agents that are missing, and breaks every job into small steps.</p></div></div>
+          <div class="executive-hero"><div class="brain-orb">◉</div><div><div class="eyebrow">YOUR CENTRAL COORDINATOR</div><h2>One request. A coordinated team.</h2><p>Example: "Help me start a small business." You stay the decision-maker.</p></div></div>
           <section class="panel executive-panel">
             <label class="brain-label" for="executive-request">What do you want your AI workforce to help accomplish?</label>
-            <textarea id="executive-request" rows="4" placeholder="Example: Research the market for my new product, compare competitors, create a launch plan, and prepare marketing content."></textarea>
+            <textarea id="executive-request" rows="4" placeholder="Example: Help me start a small business selling handmade candles."></textarea>
             <div class="brain-actions"><button class="primary-button" id="executive-plan">◉ Organize my workforce</button><button class="quiet-button" id="executive-voice">🎙 Speak my goal</button></div>
-            <p class="executive-hint">Planning is a transparent starter planner in this release. It does not claim agents have completed work.</p>
           </section>
-          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Proposed team coordination</h2><p>Review each step and the agent assigned to it before adding tasks.</p></div></div><div id="executive-plan-output" aria-live="polite"><div class="resume-placeholder">Your proposed team plan will appear here.</div></div></section>
-          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Agent handoff log</h2><p>A record of planned handoffs between departments. No background agent execution is enabled yet.</p></div></div><div id="executive-handoff-log"><div class="resume-placeholder">No handoffs recorded yet.</div></div></section>
+          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Proposed team plan</h2><p>Review each step and who it is assigned to before adding tasks.</p></div></div><div id="executive-plan-output" aria-live="polite"><div class="resume-placeholder">Your proposed team plan will appear here.</div></div></section>
+          <section class="panel executive-panel"><div class="panel-heading"><div><h2>Agent handoff log</h2><p>A record of work passed between agents.</p></div></div><div id="executive-handoff-log"></div></section>
         </section>
+
         <section class="view" id="view-brain">
-          <div class="page-heading"><div><div class="eyebrow">YOUR WORKFORCE REMEMBERS</div><h1>Agent Creator Brain</h1><p>Describe what you need in everyday language. Find agents you already created, build new specialists, and save important memories.</p></div></div>
+          <div class="page-heading"><div><div class="eyebrow">YOUR WORKFORCE REMEMBERS</div><h1>Agent Creator Brain</h1><p>Describe what you need in everyday words. The Brain finds agents you already made, builds new specialists, and can create hundreds or thousands at once.</p></div></div>
           <div class="brain-hero">
             <div class="brain-orb">✧</div><div><div class="eyebrow">EXECUTIVE MEMORY & AGENT BUILDER</div><h2>You don't have to remember everything.</h2><p>Your workspace keeps a searchable record of your agents, their jobs, projects, and notes.</p></div>
           </div>
           <section class="panel resume-panel">
-            <div class="panel-heading"><div><div class="eyebrow">YOUR PERSONAL WORK HISTORY</div><h2>What was I doing?</h2><p>Get a simple recap of unfinished work, recent projects, and saved notes.</p></div><button class="primary-button" id="brain-resume">↻ Pick up where I left off</button></div>
-            <div id="resume-summary" class="resume-summary" aria-live="polite"><div class="resume-placeholder">Your work summary will appear here. You can come back anytime and ask the Brain to help you restart.</div></div>
+            <div class="panel-heading"><div><div class="eyebrow">YOUR PERSONAL WORK HISTORY</div><h2>What was I doing?</h2><p>A simple recap of unfinished work, recent projects, and saved notes.</p></div><button class="primary-button" id="brain-resume">↻ Pick up where I left off</button></div>
+            <div id="resume-summary" class="resume-summary" aria-live="polite"></div>
           </section>
           <div class="brain-grid">
             <section class="panel brain-panel"><div class="panel-heading"><div><h2>Tell the brain what you need</h2><p>It checks your existing workforce before suggesting new agents.</p></div></div>
               <label class="brain-label" for="brain-request">What would you like your AI workforce to do?</label>
-              <textarea id="brain-request" rows="4" placeholder="Example: I need help managing my appointments, organizing medical paperwork, and remembering important deadlines."></textarea>
+              <textarea id="brain-request" rows="4" placeholder="Example: I need help with appointments, medical paperwork, and remembering deadlines."></textarea>
               <div class="brain-actions"><button class="primary-button" id="brain-analyze">✧ Build my team</button><button class="quiet-button" id="brain-voice">🎙 Speak request</button></div>
               <div id="brain-plan" class="brain-plan" aria-live="polite"></div>
             </section>
-            <section class="panel brain-panel"><div class="panel-heading"><div><h2>Workforce memory</h2><p>Search for agents and information you may have forgotten.</p></div></div>
-              <label class="brain-label" for="brain-search">Search agents, jobs, projects, and notes</label>
-              <input id="brain-search" class="brain-search" placeholder="Try: paperwork, appointments, marketing...">
+            <section class="panel brain-panel"><div class="panel-heading"><div><h2>Make many agents at once</h2><p>Make 1 to 5,000 at a time. Repeat as often as you like — there is no total limit.</p></div></div>
+              <form id="bulk-form" class="stack-form">
+                <label class="brain-label">Agent name<input class="brain-search" id="bulk-name" maxlength="60" required placeholder="Example: Research Helper"></label>
+                <label class="brain-label">Their job<input class="brain-search" id="bulk-role" maxlength="100" placeholder="Example: Finds and checks information"></label>
+                <div class="form-row">
+                  <label class="brain-label">How many?<input class="brain-search" id="bulk-count" type="number" min="1" max="5000" value="10" required></label>
+                  <label class="brain-label">Department<select id="bulk-department"></select></label>
+                  <label class="brain-label">Reports to<select id="bulk-reports-to"></select></label>
+                </div>
+                <label class="brain-label">Instructions (optional)<textarea class="brain-search" id="bulk-instructions" rows="2" placeholder="What should these agents do?"></textarea></label>
+                <button class="primary-button" type="submit">＋ Create these agents</button>
+              </form>
+            </section>
+            <section class="panel brain-panel"><div class="panel-heading"><div><h2>Workforce memory</h2><p>Search for agents, tasks, and notes you may have forgotten.</p></div></div>
+              <label class="brain-label" for="brain-search">Search agents, tasks, and notes</label>
+              <input id="brain-search" type="search" class="brain-search" placeholder="Try: paperwork, appointments, marketing...">
               <div id="brain-search-results" class="brain-results"></div>
-              <div class="memory-entry"><label class="brain-label" for="memory-note">Save a memory or instruction</label><select id="memory-category" class="brain-search" aria-label="Memory category"><option value="personal">Personal preference</option><option value="project">Project</option><option value="instruction">Important instruction</option><option value="reminder">Reminder</option><option value="agent">Agent information</option></select><textarea id="memory-note" rows="2" placeholder="Remember that this agent helps me organize..."></textarea><button class="secondary-button" id="memory-save-new">Save to my memory</button></div>
+              <div class="memory-entry"><label class="brain-label" for="memory-note">Save a memory or instruction</label><select id="memory-category" class="brain-search" aria-label="Memory category"><option value="personal">Personal preference</option><option value="project">Project</option><option value="instruction">Important instruction</option><option value="reminder">Reminder</option><option value="agent">Agent information</option></select><textarea id="memory-note" class="brain-search" rows="2" placeholder="Remember that..."></textarea><div class="brain-actions"><button class="secondary-button" id="memory-save-new">Save to my memory</button><button class="quiet-button" id="memory-voice">🎙 Speak</button></div></div>
               <div id="memory-list" class="memory-list"></div>
             </section>
           </div>
-          <div class="brain-footnote"><strong>Designed for memory support:</strong> Agent names, responsibilities, and notes are searchable. This first release saves data in this browser. Cross-device cloud memory will be enabled when secure accounts and the production database are connected.</div>
+          <div class="brain-footnote"><strong>Where is my memory kept?</strong> In this browser, on this device, for free. Use Accessibility & Settings → "Download workspace backup" to keep a copy safe or move it to another device.</div>
         </section>
+
         <section class="view" id="view-safety">
-          <div class="page-heading"><div><div class="eyebrow">MANDATORY REQUEST REVIEW</div><h1>Safety & Request Catalog</h1><p>Every submitted request is recorded here and screened for possible safety concerns before work is organized.</p></div></div>
-          <div class="notice-box"><strong>Important:</strong> This first version records requests in this browser on this device. It is not yet a centralized administrator dashboard, and its keyword screening is an early warning aid—not a diagnosis, proof of danger, or substitute for human review.</div>
+          <div class="page-heading"><div><div class="eyebrow">MANDATORY SAFETY CATALOG</div><h1>Safety Catalog</h1><p>Everything typed into this site is recorded and screened for safety concerns. This cannot be turned off.</p></div></div>
+          <div class="notice-box"><strong>How it works:</strong> requests are checked against safety word rules. A match means a person should look at it — it is not a diagnosis or proof of danger. <span id="safety-sync-status"></span></div>
           <div class="stats-grid safety-stats">
-            <article class="stat-card"><span>TOTAL REQUESTS</span><strong id="safety-total">0</strong><small>Cataloged on this device</small></article>
+            <article class="stat-card"><span>TOTAL REQUESTS</span><strong id="safety-total">0</strong><small>Cataloged</small></article>
             <article class="stat-card"><span>LOWER CONCERN</span><strong id="safety-low">0</strong><small>No rule matched</small></article>
-            <article class="stat-card"><span>NEEDS REVIEW</span><strong id="safety-review">0</strong><small>Possible concern detected</small></article>
-            <article class="stat-card"><span>URGENT REVIEW</span><strong id="safety-urgent">0</strong><small>High-priority safety language</small></article>
+            <article class="stat-card"><span>NEEDS REVIEW</span><strong id="safety-review">0</strong><small>Possible concern</small></article>
+            <article class="stat-card"><span>URGENT REVIEW</span><strong id="safety-urgent">0</strong><small>High-priority language</small></article>
           </div>
           <div class="panel safety-panel">
-            <div class="panel-heading"><div><h2>Cataloged requests</h2><p>Review the request, screening result, and date.</p></div><button class="danger-button" id="safety-clear">Clear local catalog</button></div>
+            <div class="panel-heading"><div><h2>Cataloged requests</h2><p>Newest first.</p></div></div>
             <div class="filter-row safety-filter"><label class="search-box"><span>⌕</span><input id="safety-search" type="search" placeholder="Search cataloged requests" aria-label="Search cataloged requests"></label><select id="safety-filter" aria-label="Filter by safety level"><option value="all">All safety levels</option><option value="low">Lower concern</option><option value="review">Needs review</option><option value="urgent">Urgent review</option></select></div>
             <div id="safety-list" class="safety-list" aria-live="polite"></div>
           </div>
-          <p class="safety-privacy-note">Privacy: request text is stored in this browser's local storage. It is not sent to the public use-case catalog or uploaded to an administrator server in this release. Do not use this prototype with real emergency or highly sensitive information.</p>
+          <p class="safety-privacy-note">No names or accounts are collected. If you are in danger, call 911. If you are thinking about hurting yourself, call or text 988 (U.S.).</p>
         </section>
+
         <section class="view" id="view-settings">
-          <div class="page-heading"><div><div class="eyebrow">BUILT AROUND YOU</div><h1>Accessibility & settings</h1><p>Adjust the workspace to reduce friction and make work easier to follow.</p></div></div>
+          <div class="page-heading"><div><div class="eyebrow">BUILT AROUND YOU</div><h1>Accessibility & settings</h1><p>The software adapts to you — not the other way around.</p></div></div>
           <div class="settings-grid">
-            <section class="panel settings-panel"><h2>Display preferences</h2><label class="setting-row"><span><strong>Larger text</strong><small>Increase the size of interface text.</small></span><input type="checkbox" id="large-text"></label><label class="setting-row"><span><strong>High contrast</strong><small>Strengthen borders and text contrast.</small></span><input type="checkbox" id="high-contrast"></label><label class="setting-row"><span><strong>Reduce motion</strong><small>Limit decorative movement and transitions.</small></span><input type="checkbox" id="reduce-motion"></label><label class="setting-row"><span><strong>Simple Mode</strong><small>Hide extra detail and simplify the workspace.</small></span><input type="checkbox" id="simple-mode"></label></section>
-            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode hides nonessential panels while you work. Rescue Mode gives you one clear next step when a task feels overwhelming.</p><button class="primary-button" id="rescue-button">✦ Start Rescue Mode</button><hr><h3>Data on this device</h3><p>Your current prototype data is stored in this browser only. It is not yet synced to an account or server.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Backups include your agents, departments, tasks, workflows, approvals, and accessibility settings. Restore replaces the workspace on this device.</small></div></section>
+            <section class="panel settings-panel"><h2>How it looks</h2>
+              <label class="setting-row"><span><strong>Text size</strong><small>Make everything bigger or smaller.</small></span><select id="font-scale"><option value="90">Smaller</option><option value="100">Normal</option><option value="115">Large</option><option value="130">Larger</option><option value="150">Largest</option></select></label>
+              <label class="setting-row"><span><strong>Spacing</strong><small>More room between lines and letters can make reading easier.</small></span><select id="spacing"><option value="normal">Normal</option><option value="relaxed">Relaxed</option><option value="wide">Extra wide</option></select></label>
+              <label class="setting-row"><span><strong>Colors</strong><small>Pick the color style that feels best.</small></span><select id="theme"><option value="clearpath">Clear Path (signature colors)</option><option value="calm">Calm (soft, low glare)</option><option value="light">Light</option></select></label>
+              <label class="setting-row"><span><strong>High contrast</strong><small>Stronger borders and brighter text.</small></span><input type="checkbox" id="high-contrast"></label>
+              <label class="setting-row"><span><strong>Reduce motion</strong><small>Stop movement and animations.</small></span><input type="checkbox" id="reduce-motion"></label>
+              <label class="setting-row"><span><strong>Simple Mode</strong><small>Hide extra detail.</small></span><input type="checkbox" id="simple-mode"></label>
+              <label class="setting-row"><span><strong>Reading speed</strong><small>How fast "Read to me" talks.</small></span><select id="read-rate"><option value="0.7">Slow</option><option value="0.9">Normal</option><option value="1.1">Fast</option></select></label>
+              <button class="quiet-button" id="reset-settings">Reset how it looks</button>
+            </section>
+            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode shows only your current task. Rescue Mode gives you one clear next step when things feel like too much.</p><button class="rescue-button big" data-rescue-open>✦ Start Rescue Mode</button><hr><h3>Owner area</h3><p>For the site owner only. Opens the Safety Catalog.</p><form id="owner-form" class="owner-form"><label class="sr-only" for="owner-code">Owner code</label><input id="owner-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Owner code" class="brain-search"><button class="secondary-button" type="submit">Open</button></form><p id="owner-status" class="resume-muted" role="status"></p><button class="quiet-button" id="owner-lock" hidden>Lock owner area</button><hr><h3>AI connection</h3><p id="ai-status" role="status"></p><hr><h3>Your data on this device</h3><p>Your workspace is saved in this browser. Download a backup to keep it safe or move it to another device.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Restoring replaces the workspace on this device.</small></div></section>
           </div>
         </section>
       </div>
-      <footer class="footer"><span>ACCESSIBLE AI COMMAND CENTER</span><span>People first. AI second. Always in your control.</span></footer>
+      <footer class="footer"><span>CLEAR PATH MARKETS SCIENCE · AI COMMAND CENTER</span><span>People first. AI second. Always in your control.</span></footer>
     </main>
   </div>
 
@@ -186,7 +358,8 @@
       <input type="hidden" id="agent-id">
       <label>Agent name<input id="agent-name" required maxlength="60" placeholder="Example: Research Assistant"></label>
       <label>Job or specialty<input id="agent-role" required maxlength="100" placeholder="What is this agent responsible for?"></label>
-      <label>Department<select id="agent-department" required></select></label>
+      <label>Department<select id="agent-department"></select></label>
+      <label>Reports to (their manager)<select id="agent-reports-to"></select></label>
       <label>Instructions<textarea id="agent-instructions" rows="3" placeholder="Describe the work this agent should do..."></textarea></label>
       <label>Permission level<select id="agent-permission"><option value="approval">Ask me before important actions</option><option value="prepare">Prepare work and wait for my review</option><option value="routine">Work on approved routine tasks</option></select></label>
       <div class="modal-actions"><button type="button" class="secondary-button" data-close="agent-dialog">Cancel</button><button class="primary-button" type="submit">Save agent</button></div>
@@ -197,9 +370,11 @@
     <form id="task-form" method="dialog">
       <div class="modal-heading"><div><div class="eyebrow">WORK ASSIGNMENT</div><h2>Create a task</h2><p>Break work into clear, manageable assignments.</p></div><button type="button" class="icon-button" data-close="task-dialog" aria-label="Close">✕</button></div>
       <label>Task title<input id="task-title" required maxlength="120" placeholder="What needs to get done?"></label>
+      <button type="button" class="quiet-button" id="task-voice">🎙 Speak the title</button>
       <label>Details<textarea id="task-details" rows="3" placeholder="Add context or steps (optional)..."></textarea></label>
       <label>Assign to an agent<select id="task-agent"><option value="">Leave unassigned</option></select></label>
       <label>Priority<select id="task-priority"><option value="normal">Normal</option><option value="high">High</option><option value="low">Low</option></select></label>
+      <label class="check-row"><input type="checkbox" id="task-breakdown" checked> Break it into small steps for me</label>
       <div class="modal-actions"><button type="button" class="secondary-button" data-close="task-dialog">Cancel</button><button class="primary-button" type="submit">Create task</button></div>
     </form>
   </dialog>
@@ -222,15 +397,49 @@
     </form>
   </dialog>
 
-  <dialog id="rescue-dialog" class="modal rescue-modal">
-    <div class="modal-heading"><div><div class="eyebrow">ONE STEP AT A TIME</div><h2>Let's make this easier.</h2></div><button type="button" class="icon-button" data-close="rescue-dialog" aria-label="Close">✕</button></div>
-    <div class="rescue-content"><div class="rescue-star">✦</div><h3 id="rescue-title">You don't have to do everything at once.</h3><p id="rescue-text">Choose one small next step. You can pause, ask for help, or come back later.</p><button class="primary-button" data-close="rescue-dialog">I can do this step</button></div>
+  <dialog id="rescue-dialog" class="modal rescue-modal" aria-labelledby="rescue-heading">
+    <div class="modal-heading"><div><div class="eyebrow">RESCUE MODE · ONE STEP AT A TIME</div><h2 id="rescue-heading">It's okay. Let's slow down.</h2></div><button type="button" class="icon-button" data-close="rescue-dialog" aria-label="Close Rescue Mode">✕</button></div>
+    <div class="rescue-content" id="rescue-body"></div>
   </dialog>
+
+  <dialog id="crisis-dialog" class="modal crisis-modal" aria-labelledby="crisis-heading">
+    <h2 id="crisis-heading" tabindex="-1">You matter. Help is available right now.</h2>
+    <p>It sounds like things may be very hard. You do not have to handle this alone.</p>
+    <ul class="crisis-list">
+      <li><strong>Call or text 988</strong> — the U.S. Suicide & Crisis Lifeline. Free, 24 hours a day.</li>
+      <li><strong>Call 911</strong> if you or someone else is in danger right now.</li>
+      <li>Outside the U.S., contact your local emergency number.</li>
+    </ul>
+    <div class="modal-actions"><a class="primary-button" href="tel:988">Call 988</a><a class="secondary-button" href="sms:988">Text 988</a><button type="button" class="quiet-button" id="crisis-close">Close</button></div>
+  </dialog>
+
+  <dialog id="safety-notice-dialog" class="modal" aria-labelledby="safety-notice-heading">
+    <div class="eyebrow">WELCOME — PLEASE READ</div>
+    <h2 id="safety-notice-heading">This site is free, and it keeps people safe.</h2>
+    <ul class="notice-list">
+      <li>You do not need an account. We never ask your name.</li>
+      <li>Your agents, tasks, and notes are saved in this browser on this device.</li>
+      <li><strong>Everything you type is recorded and checked for safety concerns.</strong> The Clear Path Markets Science safety team may read it to make sure people are staying safe.</li>
+      <li>Do not type passwords, bank numbers, or Social Security numbers.</li>
+      <li>If you are in danger, call 911. If you are thinking of hurting yourself, call or text 988.</li>
+    </ul>
+    <div class="modal-actions"><button type="button" class="primary-button" id="safety-notice-accept">I understand — continue</button></div>
+  </dialog>
+
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./config.js"></script>
   <script src="./app.js" defer></script>
   <script src="./brain.js" defer></script>
   <script src="./memory.js" defer></script>
   <script src="./executive.js" defer></script>
+  <script src="./assist.js" defer></script>
+  <script src="./ai.js" defer></script>
+  <script src="./intelligence.js" defer></script>
+  <script src="./social.js" defer></script>
+  <script src="./knowledge.js" defer></script>
+  <script src="./builder.js" defer></script>
+  <script src="./money.js" defer></script>
   <script src="./safety.js" defer></script>
+  <script src="./owner.js" defer></script>
 </body>
 </html>
