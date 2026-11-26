@@ -92,3 +92,11 @@ def test_website_pages_are_served_but_source_is_not(tmp_path, monkeypatch):
         for hidden in ["/docs", "/redoc", "/openapi.json"]:
             assert c.get(hidden).status_code == 404, hidden
 
+
+
+def test_storage_status_reports_temporary_without_database(tmp_path, monkeypatch):
+    for name in ("SAFETY_DATABASE_URL", "DATABASE_URL", "POSTGRES_URL"):
+        monkeypatch.delenv(name, raising=False)
+    with client(tmp_path, monkeypatch) as c:
+        body = c.get("/api/safety/status").json()
+    assert body == {"storage": "temporary (can be wiped)", "permanent": False, "working": True}

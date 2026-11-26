@@ -56,24 +56,78 @@ def _db_path() -> Path:
     return Path(os.getenv("SAFETY_DATABASE_PATH", str(folder / "safety.db")))
 
 
-def _connect() -> sqlite3.Connection:
-    path = _db_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(path)
-    conn.row_factory = sqlite3.Row
-    conn.execute(
-        """CREATE TABLE IF NOT EXISTS safety_reports(
-            id TEXT PRIMARY KEY,
-            device_id TEXT NOT NULL,
-            text TEXT NOT NULL,
-            source TEXT NOT NULL,
-            level TEXT NOT NULL,
-            reason TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            received_at TEXT NOT NULL)"""
-    )
-    conn.execute("CREATE INDEX IF NOT EXISTS idx_safety_level ON safety_reports(level, received_at)")
-    return conn
+def database_url() -> str:
+    """A permanent Postgres database (for example Neon, connected through
+    Vercel Storage). Vercel fills these in automatically when connected."""
+    for name in ("SAFETY_DATABASE_URL", "DATABASE_URL", "POSTGRES_URL"):
+        value = os.getenv(name, "")
+        if value.startswith(("postgres://", "postgresql://")):
+            return value
+    return ""
+
+
+SCHEMA = [
+    """CREATE TABLE IF NOT EXISTS safety_reports(
+        id TEXT PRIMARY KEY,
+        device_id TEXT NOT NULL,
+        text TEXT NOT NULL,
+        source TEXT NOT NULL,
+        level TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        received_at TEXT NOT NULL)""",
+    "CREATE INDEX IF NOT EXISTS idx_safety_level ON safety_reports(level, received_at)",
+    "CREATE INDEX IF NOT EXISTS idx_safety_received ON safety_reports(received_at)",
+]
+_pg_ready: set[str] = set()
+
+
+class _Store:
+    """One small doorway to storage. Code always writes `?` placeholders;
+    for Postgres they are switched to `%s` (and LIKE becomes ILIKE so
+    searching ignores capital letters, like it does locally)."""
+
+    def __init__(self):
+        url = database_url()
+        self.postgres = bool(url)
+        if self.postgres:
+            import psycopg
+            from psycopg.rows import dict_row
+            self.conn = psycopg.connect(url, row_factory=dict_row, connect_timeout=10)
+            if url not in _pg_ready:
+                for statement in SCHEMA:
+                    self.conn.execute(statement)
+                self.conn.commit()
+                _pg_ready.add(url)
+        else:
+            path = _db_path()
+            path.parent.mkdir(parents=True, exist_ok=True)
+            self.conn = sqlite3.connect(path)
+            self.conn.row_factory = sqlite3.Row
+            for statement in SCHEMA:
+                self.conn.execute(statement)
+
+    def execute(self, sql: str, params=()):
+        if self.postgres:
+            sql = sql.replace("?", "%s").replace(" LIKE ", " ILIKE ")
+        return self.conn.execute(sql, params)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, *_):
+        try:
+            if exc_type is None:
+                self.conn.commit()
+            else:
+                self.conn.rollback()
+        finally:
+            self.conn.close()
+        return False
+
+
+def _connect() -> _Store:
+    return _Store()
 
 
 class SafetyReportIn(BaseModel):
@@ -147,6 +201,23 @@ def _require_admin(token: Optional[str], client_ip: str = "unknown") -> None:
     raise HTTPException(401, "Wrong code.")
 
 
+@router.get("/api/safety/status")
+def storage_status():
+    """Says which kind of storage the catalog uses. Shows no data and no secrets."""
+    permanent = bool(database_url())
+    try:
+        with _connect() as conn:
+            conn.execute("SELECT 1 AS ok").fetchone()
+        working = True
+    except Exception:
+        working = False
+    return {
+        "storage": "permanent database" if permanent else "temporary (can be wiped)",
+        "permanent": permanent,
+        "working": working,
+    }
+
+
 @router.get("/api/admin/safety")
 def admin_list(
     request: Request,
@@ -182,7 +253,7 @@ def admin_list(
             (*params, limit, offset),
         ).fetchall()
         totals = {r["level"]: r["n"] for r in conn.execute("SELECT level, COUNT(*) n FROM safety_reports GROUP BY level")}
-        devices = conn.execute("SELECT COUNT(DISTINCT device_id) FROM safety_reports").fetchone()[0]
+        devices = conn.execute("SELECT COUNT(DISTINCT device_id) AS n FROM safety_reports").fetchone()["n"]
         sources = {r["source"]: r["n"] for r in conn.execute("SELECT source, COUNT(*) n FROM safety_reports GROUP BY source ORDER BY n DESC LIMIT 30")}
     return {
         "totals": {"low": totals.get("low", 0), "review": totals.get("review", 0), "urgent": totals.get("urgent", 0)},
@@ -192,4 +263,4 @@ def admin_list(
     }
 
 
-SAFETY_PATHS = {"/api/safety/report", "/api/admin/safety"}
+SAFETY_PATHS = {"/api/safety/report", "/api/admin/safety", "/api/safety/status"}
