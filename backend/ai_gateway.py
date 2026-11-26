@@ -75,7 +75,7 @@ SYSTEM_PROMPT = (
     "Rules you must always follow:\n"
     "1. The person may have a disability that affects memory, attention, reading, or stress. "
     "Use short sentences and everyday words (about a 6th-grade reading level).\n"
-    "2. Use numbered steps when you give steps. Keep the whole answer under 250 words.\n"
+    "2. Use numbered steps when you give steps. Keep answers under 250 words, except when writing code.\n"
     "3. You only write drafts and suggestions. Never say you sent, paid, posted, booked, signed, "
     "or deleted anything. If the task needs any of those, say the person must approve it first.\n"
     "4. Never ask for passwords, bank numbers, card numbers, or Social Security numbers.\n"
@@ -87,13 +87,20 @@ MODE_PROMPTS = {
     "agent": "Please do this task as a helpful first draft:\n\n{task}",
     "simplify": "Explain this in very simple words, in 5 short sentences or fewer:\n\n{task}",
     "steps": "Break this into 3 to 6 very small, easy steps. One short line per step:\n\n{task}",
+    "code": (
+        "Write a complete, working web app for this idea as ONE file named index.html, with the HTML, CSS, "
+        "and JavaScript all inside it. No outside libraries, no passwords or keys in the code. Make it "
+        "accessible: large readable text, good contrast, labels on every input, works with a keyboard. "
+        "Add short comments in plain words explaining each part. After the code, give 3 numbered plain "
+        "steps for saving and opening it.\n\nThe idea:\n{task}"
+    ),
 }
 
 
 class AIChatIn(BaseModel):
     device_id: str = Field(min_length=6, max_length=64, pattern=r"^[A-Za-z0-9-]+$")
     task: str = Field(min_length=1, max_length=6000)
-    mode: str = Field(default="agent", pattern="^(agent|simplify|steps)$")
+    mode: str = Field(default="agent", pattern="^(agent|simplify|steps|code)$")
     agent_name: str = Field(default="Executive Assistant", max_length=80)
     agent_role: str = Field(default="Helps organize and complete tasks", max_length=160)
     agent_instructions: str = Field(default="", max_length=1500)
@@ -162,13 +169,13 @@ def _record(device_id: str, text: str, source: str, level: str, reason: str) -> 
         pass  # never block a person from help because the catalog is unavailable
 
 
-def _call(client: httpx.Client, provider: str, model: str, messages: list[dict]) -> Optional[str]:
+def _call(client: httpx.Client, provider: str, model: str, messages: list[dict], max_tokens: int = 700) -> Optional[str]:
     """Returns the answer text, or None if this provider/model should be skipped."""
     spec = PROVIDERS[provider]
     headers = {"Authorization": "Bearer " + os.environ[spec["key"]], "Content-Type": "application/json"}
     if provider == "openrouter":
         headers["X-Title"] = "ClearPath AI Command Center"
-    body = {"model": model, "messages": messages, "temperature": 0.3, "max_tokens": 700}
+    body = {"model": model, "messages": messages, "temperature": 0.3, "max_tokens": max_tokens}
     try:
         res = client.post(spec["url"], json=body, headers=headers, timeout=40)
     except httpx.HTTPError:
@@ -219,7 +226,7 @@ def chat(item: AIChatIn):
     with httpx.Client() as client:
         for provider in ready:
             for model in _models_for(provider, client):
-                text = _call(client, provider, model, messages)
+                text = _call(client, provider, model, messages, 4000 if item.mode == "code" else 700)
                 if text:
                     return {"text": text, "provider": PROVIDERS[provider]["name"], "model": model, "crisis": False}
     raise HTTPException(502, "None of the connected AI companies answered. They may be busy or out of free questions. Please try again later.")

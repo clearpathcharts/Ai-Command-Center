@@ -22,7 +22,8 @@ The software adapts to the person, not the other way around.
 | **Social Media Studio** | Write posts per platform with character limits, plan dates, get approval. The app never posts for you. |
 | **Knowledge Base** | Your own how-to library. Its search box searches the whole workspace. |
 | **Accessibility settings** | Text size, spacing, color style (ClearPath signature, Calm, Light), high contrast, reduce motion, Simple Mode, read-aloud speed, voice typing everywhere. |
-| **Safety Catalog** | Every request screened as Lower concern / Needs review / Urgent. Users cannot delete entries. |
+| **Build Your Own App** | 10 lessons from the first line of code to pushing to GitHub, with copy buttons and read-aloud. Project starter files to download, and an agent that can write the app code (when AI is connected). |
+| **Safety Catalog** (owner only) | Every request and creation screened as Lower concern / Needs review / Urgent. Hidden from users; opens only when the server accepts the owner code. Users cannot delete entries. |
 
 **AI agents:** press "🤖 Agent: do this" on any task and the assigned agent writes a draft using AI. The server connects to **Groq** first (free plan, reported not to train on free-plan data), then **Google Gemini**, **OpenRouter** free models, and **xAI Grok** as backups. Keys stay on the server. Agents only write drafts — they never send, pay, post, sign, or delete. Crisis language is never sent to an AI company; the person gets 988/911 help instead. Every AI request is recorded in the safety catalog.
 
@@ -35,8 +36,9 @@ The software adapts to the person, not the other way around.
 
 You need the `backend` folder running on a server you control.
 
-**Step 1.** On the server, set these two settings (see `backend/.env.example`):
-- `SAFETY_ADMIN_TOKEN` = a long secret key that only you know (16+ characters).
+**Step 1.** On the server, set these settings (see `backend/.env.example`):
+- `SAFETY_ADMIN_PIN` = your private owner code (6+ digits). It is only ever stored on the server. After 5 wrong tries, the code locks for 15 minutes.
+- Optional: `SAFETY_ADMIN_TOKEN` = a longer secret key (16+ characters) that also works.
 - `CORS_ORIGINS` = the web address of your site, for example `https://yoursite.com`.
 
 **Step 2.** Open the file `config.js`. Find this line:
@@ -55,7 +57,7 @@ This one setting turns on both safety reporting and the AI agents.
 
 Save the file.
 
-**Step 3.** Open `admin.html` on your site. Type your server address and your secret key. Press "Show reports".
+**Step 3.** Open `admin.html` on your site. Type your server address and your owner code. Press "Show reports".
 
 Until Step 2 is done, the Safety Catalog page in the app says "Central reporting is OFF" and entries stay on each device.
 

@@ -29,7 +29,8 @@
         <button class="nav-link" data-view="intelligence"><span aria-hidden="true">⌕</span> Intelligence Engine</button>
         <button class="nav-link" data-view="social"><span aria-hidden="true">✉</span> Social Media Studio</button>
         <button class="nav-link" data-view="knowledge"><span aria-hidden="true">▤</span> Knowledge Base</button>
-        <button class="nav-link" data-view="safety"><span aria-hidden="true">⬡</span> Safety Catalog <b id="nav-safety-count">0</b></button>
+        <button class="nav-link" data-view="builder"><span aria-hidden="true">⌨</span> Build Your Own App</button>
+        <button class="nav-link owner-only" data-view="safety"><span aria-hidden="true">⬡</span> Safety Catalog <b id="nav-safety-count">0</b></button>
       </nav>
       <div class="sidebar-bottom">
         <div class="safety-note"><span class="status-dot"></span><div><strong>You are in control</strong><small>Nothing is sent, paid, or posted without your yes.</small></div></div>
@@ -216,6 +217,27 @@
           <div id="kb-list" class="kb-list"></div>
         </section>
 
+        <section class="view" id="view-builder">
+          <div class="page-heading"><div><div class="eyebrow">LEARN TO BUILD · FIRST LINE OF CODE TO GITHUB</div><h1>Build Your Own App</h1><p>Make your own website or app, one small lesson at a time. Every step tells you exactly where to type and what to copy.</p></div></div>
+          <div class="builder-layout">
+            <nav class="panel builder-nav" aria-label="Lessons"><p class="count-line" id="builder-progress"></p><div id="builder-list" class="builder-list"></div></nav>
+            <section class="panel builder-lesson" id="builder-lesson" aria-live="polite"></section>
+          </div>
+          <section class="panel">
+            <h2>Start a project</h2>
+            <p class="resume-muted">Describe your app idea. You get a working starter file to download, or an agent can write the code for you.</p>
+            <form id="builder-form" class="stack-form">
+              <label class="brain-label">App name<input class="brain-search" id="builder-name" maxlength="80" placeholder="Example: My Medicine Reminder"></label>
+              <label class="brain-label" for="builder-idea">What should it do?</label>
+              <textarea class="brain-search" id="builder-idea" rows="3" maxlength="1500" placeholder="Example: A list where I write which medicine I took and when."></textarea>
+              <label class="brain-label">Main color<select id="builder-color"><option value="#00FFFF">Electric Cyan</option><option value="#FF1493">Fluorescent Pink</option><option value="#B026FF">Neon Purple</option><option value="#00A8FF">Electric Blue</option><option value="#FF7B00">Neon Orange</option><option value="#39FF14">Neon Lime</option></select></label>
+              <div class="brain-actions"><button class="primary-button" type="submit">Save project</button><button type="button" class="quiet-button" id="builder-voice">🎙 Speak my idea</button></div>
+            </form>
+          </section>
+          <div class="section-heading"><div><h2>Your projects</h2></div></div>
+          <div id="builder-projects" class="kb-list"></div>
+        </section>
+
         <section class="view" id="view-executive">
           <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · EXECUTIVE ORCHESTRATION</div><h1>Executive Brain</h1><p>Give your workforce a goal. It organizes the team, creates any specialist agents that are missing, and breaks every job into small steps.</p></div></div>
           <div class="executive-hero"><div class="brain-orb">◉</div><div><div class="eyebrow">YOUR CENTRAL COORDINATOR</div><h2>One request. A coordinated team.</h2><p>Example: "Help me start a small business." You stay the decision-maker.</p></div></div>
@@ -298,7 +320,7 @@
               <label class="setting-row"><span><strong>Reading speed</strong><small>How fast "Read to me" talks.</small></span><select id="read-rate"><option value="0.7">Slow</option><option value="0.9">Normal</option><option value="1.1">Fast</option></select></label>
               <button class="quiet-button" id="reset-settings">Reset how it looks</button>
             </section>
-            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode shows only your current task. Rescue Mode gives you one clear next step when things feel like too much.</p><button class="rescue-button big" data-rescue-open>✦ Start Rescue Mode</button><hr><h3>AI connection</h3><p id="ai-status" role="status"></p><hr><h3>Your data on this device</h3><p>Your workspace is saved in this browser. Download a backup to keep it safe or move it to another device.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Restoring replaces the workspace on this device.</small></div></section>
+            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode shows only your current task. Rescue Mode gives you one clear next step when things feel like too much.</p><button class="rescue-button big" data-rescue-open>✦ Start Rescue Mode</button><hr><h3>Owner area</h3><p>For the site owner only. Opens the Safety Catalog.</p><form id="owner-form" class="owner-form"><label class="sr-only" for="owner-code">Owner code</label><input id="owner-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Owner code" class="brain-search"><button class="secondary-button" type="submit">Open</button></form><p id="owner-status" class="resume-muted" role="status"></p><button class="quiet-button" id="owner-lock" hidden>Lock owner area</button><hr><h3>AI connection</h3><p id="ai-status" role="status"></p><hr><h3>Your data on this device</h3><p>Your workspace is saved in this browser. Download a backup to keep it safe or move it to another device.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Restoring replaces the workspace on this device.</small></div></section>
           </div>
         </section>
       </div>
@@ -391,6 +413,8 @@
   <script src="./intelligence.js" defer></script>
   <script src="./social.js" defer></script>
   <script src="./knowledge.js" defer></script>
+  <script src="./builder.js" defer></script>
   <script src="./safety.js" defer></script>
+  <script src="./owner.js" defer></script>
 </body>
 </html>

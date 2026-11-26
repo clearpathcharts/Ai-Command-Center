@@ -108,6 +108,48 @@ function check(ok, label) { console.log((ok ? "PASS " : "FAIL ") + label); if (!
   const stalk = await page.evaluate(() => window.AICC_SAFETY.screen("someone is stalking me").level);
   check(stalk === "review", "'stalking' is flagged for review");
 
+  // 8b. Owner code: catalog hidden from users, opens only when the server accepts the code.
+  check(!(await page.isVisible('[data-view="safety"]')), "Safety Catalog is hidden from regular users");
+  check(!(await page.content()).match(/ownerCodeHash|SAFETY_ADMIN_PIN/), "no owner code or scrambled code is in the website");
+  const owner = await browser.newPage();
+  owner.on("pageerror", e => errors.push(e.message));
+  await owner.route("**/config.js", r => r.fulfill({contentType: "application/javascript", body: 'window.AICC_CONFIG={serverAddress:"https://fake-server.test",ownerCheckUrl:"https://fake-server.test/api/admin/safety?limit=1",safetyReportUrl:""};'}));
+  await owner.route("https://fake-server.test/**", r => {
+    const ok = r.request().headers()["x-admin-token"] === "246810"; // made-up test code, not the real one
+    return r.fulfill(ok ? {json: {totals: {}, items: []}} : {status: 401, json: {detail: "Wrong code."}});
+  });
+  await owner.goto(URL);
+  await owner.click("#safety-notice-accept");
+  await owner.evaluate(() => window.AICC.showView("settings"));
+  await owner.fill("#owner-code", "111111");
+  await owner.click("#owner-form button[type=submit]");
+  await owner.waitForTimeout(200);
+  check(!(await owner.isVisible("#view-safety")), "wrong owner code does not open the catalog");
+  await owner.fill("#owner-code", "246810");
+  await owner.click("#owner-form button[type=submit]");
+  await owner.waitForSelector("#view-safety.active");
+  check(await owner.isVisible('[data-view="safety"]'), "correct owner code (checked by the server) opens the Safety Catalog");
+  await owner.evaluate(() => window.AICC.showView("settings"));
+  await owner.click("#owner-lock");
+  check(!(await owner.isVisible('[data-view="safety"]')), "owner area locks again");
+  await owner.close();
+
+  // 8c. Build Your Own App.
+  await page.click('[data-view="builder"]');
+  check((await page.locator(".builder-step").count()) === 10, "app course has 10 lessons");
+  await page.click("#builder-done");
+  check((await page.textContent("#builder-lesson h2")).includes("folder"), "'I did this lesson' moves to the next lesson");
+  await page.click('[data-lesson="8"]');
+  check((await page.textContent("#builder-lesson pre")).includes("git push -u origin main"), "course ends with pushing to GitHub");
+  await page.fill("#builder-name", "Medicine Reminder");
+  await page.fill("#builder-idea", "A list of which medicine I took and when");
+  await page.click("#builder-form button[type=submit]");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("[data-project-download]")]);
+  const html = require("fs").readFileSync(await dl.path(), "utf8");
+  check(html.startsWith("<!doctype html>") && html.includes("Medicine Reminder"), "project starter file downloads as a working index.html");
+  const cat2 = await page.evaluate(() => JSON.parse(localStorage.getItem("aicc-safety-request-catalog-v1")));
+  check(cat2.some(e => e.source === "App Builder project"), "app projects are recorded in the safety catalog");
+
   // 9. Intelligence Engine tools.
   await page.click('[data-view="intelligence"]');
   await page.fill("#intel-research-topic", "disability benefits");

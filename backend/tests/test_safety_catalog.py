@@ -64,3 +64,16 @@ def test_uses_writable_temp_folder_on_vercel(monkeypatch):
     assert str(reloaded.DB_PATH).startswith(tempfile.gettempdir())
     monkeypatch.delenv("VERCEL")
     importlib.reload(main)
+
+
+def test_owner_pin_works_and_locks_after_wrong_tries(tmp_path, monkeypatch):
+    import safety_api
+    safety_api._failed_by_ip.clear(); safety_api._failed_all.clear()
+    monkeypatch.setenv("SAFETY_ADMIN_PIN", "654321")
+    with client(tmp_path, monkeypatch, token=None) as c:
+        assert c.get("/api/admin/safety", headers={"X-Admin-Token": "654321"}).status_code == 200
+        codes = [c.get("/api/admin/safety", headers={"X-Admin-Token": "000000"}).status_code for _ in range(5)]
+        assert codes == [401] * 5
+        # Locked now — even the right code is refused for 15 minutes.
+        assert c.get("/api/admin/safety", headers={"X-Admin-Token": "654321"}).status_code == 429
+    safety_api._failed_by_ip.clear(); safety_api._failed_all.clear()

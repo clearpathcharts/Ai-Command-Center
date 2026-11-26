@@ -349,3 +349,28 @@ body.theme-light .safety-note small,body.theme-light .human-control p,body.theme
 body.theme-light .ai-draft{background:#f6f0ff;border-color:#8a3cd6;color:#11131a}
 body.theme-light .ai-button{color:#006b8f!important;border-color:#006b8f!important}
 body.theme-calm .ai-draft{background:#1f2430;border-color:#4a5162}
+/* Owner-only items are hidden until the owner code is entered */
+.owner-only{display:none!important}
+body.owner-unlocked .owner-only{display:flex!important}
+.owner-form{display:flex;gap:8px;align-items:center}
+.owner-form input{max-width:200px}
+/* Build Your Own App */
+.builder-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:15px;margin-bottom:16px}
+.builder-list{display:grid;gap:6px}
+.builder-step{display:flex;gap:10px;align-items:center;text-align:left;width:100%;background:transparent;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:13px}
+.builder-step span{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;background:#1b1030;font-weight:800;font-size:12px}
+.builder-step.current{border-color:#00FFFF;box-shadow:inset 3px 0 #00FFFF}
+.builder-step.done span{background:#39FF14;color:#000}
+.builder-lesson h2{font:700 24px 'Space Grotesk';margin:6px 0}
+.builder-where{font-size:15px;padding:10px 12px;border-radius:10px;background:#00ffff12;border:1px solid #00ffff55}
+.builder-instructions{font-size:16px;line-height:1.7;padding-left:22px}
+.code-box{margin:14px 0;border:1px solid #B026FF;border-radius:12px;overflow:hidden;background:#05050a}
+.code-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#140b22;font-size:12px;color:#00FFFF;font-weight:700}
+.code-box summary{padding:10px 12px;cursor:pointer;color:#00FFFF;font-weight:700}
+.code-box pre{margin:0;padding:14px;overflow:auto;max-height:420px;font-size:14px;line-height:1.5}
+.code-box code{font-family:Consolas,"Courier New",monospace;color:#f2f2ff;white-space:pre}
+body.theme-light .code-box{background:#f7f7fb;border-color:#8a3cd6}
+body.theme-light .code-box code{color:#11131a}
+body.theme-light .code-head{background:#efe6ff;color:#4a1b85}
+body.theme-light .builder-where{background:#eef7fa;border-color:#9fcfdc}
+@media(max-width:900px){.builder-layout{grid-template-columns:1fr}}

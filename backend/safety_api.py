@@ -113,24 +113,53 @@ def report(item: SafetyReportIn):
     return {"recorded": True, "level": level}
 
 
-def _require_admin(token: Optional[str]) -> None:
-    expected = os.getenv("SAFETY_ADMIN_TOKEN", "")
-    if len(expected) < 16:
-        raise HTTPException(503, "The safety review page is not set up. Set SAFETY_ADMIN_TOKEN (at least 16 characters) on the server.")
-    if not token or not hmac.compare_digest(token, expected):
-        raise HTTPException(401, "Wrong admin key.")
+# Wrong-code lockout. A short number code can be guessed by a computer, so
+# after 5 wrong tries from one address the door locks for 15 minutes, and
+# after 30 wrong tries in an hour from anywhere, the number code stops
+# working (the long admin key still works).
+_failed_by_ip: dict[str, deque] = defaultdict(deque)
+_failed_all: deque = deque()
+
+
+def _count_recent(window: deque, seconds: int) -> int:
+    now = time.monotonic()
+    while window and now - window[0] > seconds:
+        window.popleft()
+    return len(window)
+
+
+def _require_admin(token: Optional[str], client_ip: str = "unknown") -> None:
+    key = os.getenv("SAFETY_ADMIN_TOKEN", "")
+    pin = os.getenv("SAFETY_ADMIN_PIN", "")
+    key_ok = len(key) >= 16
+    pin_ok = len(pin) >= 6
+    if not key_ok and not pin_ok:
+        raise HTTPException(503, "The safety review page is not set up. Set SAFETY_ADMIN_PIN (6+ digits) or SAFETY_ADMIN_TOKEN (16+ characters) on the server.")
+    if _count_recent(_failed_by_ip[client_ip], 900) >= 5:
+        raise HTTPException(429, "Too many wrong tries. This is locked for 15 minutes.")
+    token = token or ""
+    if key_ok and hmac.compare_digest(token, key):
+        return
+    if pin_ok and _count_recent(_failed_all, 3600) < 30 and hmac.compare_digest(token, pin):
+        return
+    _failed_by_ip[client_ip].append(time.monotonic())
+    _failed_all.append(time.monotonic())
+    raise HTTPException(401, "Wrong code.")
 
 
 @router.get("/api/admin/safety")
 def admin_list(
+    request: Request,
     level: str = "",
     q: str = "",
     device_id: str = "",
+    source: str = "",
     limit: int = 200,
     offset: int = 0,
     x_admin_token: Optional[str] = Header(default=None),
 ):
-    _require_admin(x_admin_token)
+    forwarded = request.headers.get("x-forwarded-for", "")
+    _require_admin(x_admin_token, forwarded.split(",")[0].strip() or (request.client.host if request.client else "unknown"))
     limit = max(1, min(limit, 1000))
     offset = max(0, offset)
     where, params = [], []
@@ -140,6 +169,9 @@ def admin_list(
     if q:
         where.append("text LIKE ?")
         params.append("%" + q[:200] + "%")
+    if source:
+        where.append("source=?")
+        params.append(source[:60])
     if device_id:
         where.append("device_id=?")
         params.append(device_id[:64])
@@ -151,9 +183,11 @@ def admin_list(
         ).fetchall()
         totals = {r["level"]: r["n"] for r in conn.execute("SELECT level, COUNT(*) n FROM safety_reports GROUP BY level")}
         devices = conn.execute("SELECT COUNT(DISTINCT device_id) FROM safety_reports").fetchone()[0]
+        sources = {r["source"]: r["n"] for r in conn.execute("SELECT source, COUNT(*) n FROM safety_reports GROUP BY source ORDER BY n DESC LIMIT 30")}
     return {
         "totals": {"low": totals.get("low", 0), "review": totals.get("review", 0), "urgent": totals.get("urgent", 0)},
         "devices": devices,
+        "sources": sources,
         "items": [dict(r) for r in rows],
     }
 

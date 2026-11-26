@@ -33,8 +33,8 @@
     {id:"kb-scams",title:"Five signs of a scam",body:"1. They rush you. 2. They want gift cards, crypto, or wire transfers. 3. They ask for passwords or codes. 4. They say you won something. 5. They tell you to keep it secret. Use the Scam checker in the Intelligence Engine, and ask someone you trust.",tags:"scam, fraud, money, safety",createdAt:"2026-01-01T00:00:00.000Z"},
     {id:"kb-forget",title:"Forgot which agents you made?",body:"Open My AI Agents and use the search box, or open the Agent Creator Brain and search. The app also warns you if you try to make an agent you already have. You can make as many agents as you need.",tags:"memory, agents, forget, search",createdAt:"2026-01-01T00:00:00.000Z"}
   ];
-  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],memories:[],handoffs:[],monitors:[],socialPosts:[],knowledge:starterKnowledge,settings:defaultSettings};
-  const VIEW_NAMES = {social:"Social Media Studio",knowledge:"Knowledge Base",overview:"Overview",agents:"My AI Agents",brain:"Agent Creator Brain",executive:"Executive Brain",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings",workflows:"Team Workflows",safety:"Safety & Request Catalog"};
+  const initial = {departments:defaultDepartments,agents:starterAgents,tasks:[],approvals:[],workflows:[],memories:[],handoffs:[],monitors:[],socialPosts:[],projects:[],knowledge:starterKnowledge,settings:defaultSettings};
+  const VIEW_NAMES = {builder:"Build Your Own App",social:"Social Media Studio",knowledge:"Knowledge Base",overview:"Overview",agents:"My AI Agents",brain:"Agent Creator Brain",executive:"Executive Brain",departments:"Departments",tasks:"Tasks & Projects",approvals:"Approval Center",intelligence:"Intelligence Engine",settings:"Accessibility & Settings",workflows:"Team Workflows",safety:"Safety & Request Catalog"};
 
   // Words that mean an action reaches the outside world. Tasks containing them
   // automatically get an approval request so a person stays in control.
@@ -53,7 +53,7 @@
 
   function normalize(raw){
     const s={...clone(initial),...raw};
-    ["departments","agents","tasks","approvals","workflows","memories","handoffs","monitors","socialPosts"].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
+    ["departments","agents","tasks","approvals","workflows","memories","handoffs","monitors","socialPosts","projects"].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
     if(!Array.isArray(s.knowledge))s.knowledge=clone(starterKnowledge);
     s.settings={...defaultSettings,...(raw.settings||{})};
     // Older versions used a "largeText" checkbox.
@@ -98,7 +98,7 @@
     const required=["departments","agents","tasks","approvals","workflows"];
     if(!required.every(key=>Array.isArray(data[key])))return false;
     if(data.settings!==undefined&&(!data.settings||typeof data.settings!=="object"||Array.isArray(data.settings)))return false;
-    const max={departments:5000,agents:100000,tasks:100000,approvals:50000,workflows:20000,memories:50000,handoffs:100000,monitors:1000,socialPosts:20000,knowledge:20000};
+    const max={departments:5000,agents:100000,tasks:100000,approvals:50000,workflows:20000,memories:50000,handoffs:100000,monitors:1000,socialPosts:20000,knowledge:20000,projects:20000};
     return Object.keys(max).every(key=>!Array.isArray(data[key])||data[key].length<=max[key]);
   }
   function downloadFile(name,text,type="application/json"){

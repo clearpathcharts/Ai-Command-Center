@@ -31,10 +31,10 @@
       <p>This page shows the safety catalog from everyone who uses the site. No names are collected — each person's device has a random number instead.</p>
       <label for="server">Step 1 — Your server address</label>
       <input id="server" placeholder="https://safety.yourdomain.com" autocomplete="off">
-      <label for="token">Step 2 — Your admin key (the SAFETY_ADMIN_TOKEN you set on the server)</label>
-      <input id="token" type="password" autocomplete="off">
+      <label for="token">Step 2 — Your private owner code</label>
+      <input id="token" type="password" inputmode="numeric" autocomplete="off">
       <button id="connect">Step 3 — Show reports</button>
-      <p><small>The key is kept only while this tab is open. It is not saved.</small></p>
+      <p><small>The code is kept only while this tab is open. It is not saved. After 5 wrong tries, it locks for 15 minutes.</small></p>
     </section>
     <div id="message"></div>
     <section class="card" id="report-card" hidden>
