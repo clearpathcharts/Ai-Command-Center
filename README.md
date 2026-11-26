@@ -24,7 +24,7 @@ The software adapts to the person, not the other way around.
 | **Accessibility settings** | Text size, spacing, color style (ClearPath signature, Calm, Light), high contrast, reduce motion, Simple Mode, read-aloud speed, voice typing everywhere. |
 | **Safety Catalog** | Every request screened as Lower concern / Needs review / Urgent. Users cannot delete entries. |
 
-**Honest note:** no AI model is connected yet. Agents organize, assign, and track the work and walk the person through it. They do not secretly do work by themselves, and the app never says they did.
+**AI agents:** press "🤖 Agent: do this" on any task and the assigned agent writes a draft using AI. The server connects to **Groq** first (free plan, reported not to train on free-plan data), then **Google Gemini**, **OpenRouter** free models, and **xAI Grok** as backups. Keys stay on the server. Agents only write drafts — they never send, pay, post, sign, or delete. Crisis language is never sent to an AI company; the person gets 988/911 help instead. Every AI request is recorded in the safety catalog.
 
 ## Where data is kept
 
@@ -42,20 +42,35 @@ You need the `backend` folder running on a server you control.
 **Step 2.** Open the file `config.js`. Find this line:
 
 ```js
-  safetyReportUrl: ""
+  serverAddress: ""
 ```
 
-Replace it with your server address, ending in `/api/safety/report`:
+Put your server address between the quotes, with nothing after it:
 
 ```js
-  safetyReportUrl: "https://your-server-address/api/safety/report"
+  serverAddress: "https://your-server-address"
 ```
+
+This one setting turns on both safety reporting and the AI agents.
 
 Save the file.
 
 **Step 3.** Open `admin.html` on your site. Type your server address and your secret key. Press "Show reports".
 
 Until Step 2 is done, the Safety Catalog page in the app says "Central reporting is OFF" and entries stay on each device.
+
+## Connecting AI companies
+
+Add one or more of these keys in the **server's** settings (never in `config.js`, never in chat):
+
+| Setting name | Where to get the key |
+|---|---|
+| `GROQ_API_KEY` | console.groq.com → API Keys |
+| `GEMINI_API_KEY` | aistudio.google.com → Get API key |
+| `OPENROUTER_API_KEY` | openrouter.ai → Keys |
+| `XAI_API_KEY` | console.x.ai → API Keys |
+
+Optional: `GROQ_MODELS`, `GEMINI_MODELS`, `OPENROUTER_MODELS`, `XAI_MODELS` (comma-separated model names) if a company renames its models, and `AI_PROVIDER_ORDER` (default `groq,gemini,openrouter,xai`).
 
 ## Checks
 

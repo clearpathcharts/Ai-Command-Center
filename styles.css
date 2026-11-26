@@ -338,3 +338,14 @@ body.theme-light .rescue-message{background:#e8f9e4;color:#14530a}
 .sidebar .nav-link{padding:10px 12px}
 .brand{padding-bottom:22px}
 body.theme-light .safety-note small,body.theme-light .human-control p,body.theme-light .brain-footnote,body.theme-light .footer,body.theme-light .resume-muted,body.theme-light .resume-last{color:#3a4152}
+/* AI drafts */
+.ai-button{border-color:#00FFFF!important;color:#00FFFF!important}
+.ai-draft{margin-top:10px;padding:12px 14px;border-radius:12px;border:1px solid #B026FF;background:#120a1c}
+.ai-draft.working{border-style:dashed;color:#00FFFF}
+.ai-draft.crisis{border-color:#FF1493;background:#2a0718}
+.ai-draft-head strong{display:block;font-size:13px}
+.ai-draft-head small{color:var(--muted);font-size:11px}
+.ai-draft p{white-space:pre-wrap;font-size:14px;line-height:1.6;margin:8px 0}
+body.theme-light .ai-draft{background:#f6f0ff;border-color:#8a3cd6;color:#11131a}
+body.theme-light .ai-button{color:#006b8f!important;border-color:#006b8f!important}
+body.theme-calm .ai-draft{background:#1f2430;border-color:#4a5162}

@@ -71,7 +71,7 @@
     flush();
   }
 
-  function record(text, source){
+  function record(text, source, opts = {}){
     const clean = String(text || "").trim();
     if (!clean) return null;
     const result = classify(clean);
@@ -79,7 +79,7 @@
     entries.unshift(entry);
     if (entries.length > 5000) entries = entries.slice(0,5000);
     store(KEY, entries);
-    enqueue(entry);
+    if (!opts.localOnly) enqueue(entry);
     render();
     if (result.level === "urgent") showCrisis();
     return entry;

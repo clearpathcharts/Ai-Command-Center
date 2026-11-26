@@ -1,12 +1,19 @@
 /*
- * Site settings. This is the ONLY file you need to change to turn on
- * central safety reporting.
+ * Site settings. This is the ONLY file you need to change.
  *
- * safetyReportUrl: the web address of YOUR backend server, ending in
- *   /api/safety/report
- *   Example: "https://safety.yourdomain.com/api/safety/report"
- *   Leave it as "" (empty) to keep safety entries only on each person's device.
+ * serverAddress: the web address of YOUR backend server, with nothing after it.
+ *   Example: "https://safety.yourdomain.com"
+ *   When this is filled in:
+ *     - safety reports are sent to your private Safety Review page, and
+ *     - agents can use the connected AI companies (Groq, Gemini, OpenRouter, xAI).
+ *   Leave it as "" (empty) to keep everything on each person's device, with no AI.
  */
 window.AICC_CONFIG = {
-  safetyReportUrl: ""
+  serverAddress: ""
 };
+(function(){
+  var base = String(window.AICC_CONFIG.serverAddress || "").trim().replace(/\/+$/, "");
+  window.AICC_CONFIG.safetyReportUrl = window.AICC_CONFIG.safetyReportUrl || (base ? base + "/api/safety/report" : "");
+  window.AICC_CONFIG.aiChatUrl = base ? base + "/api/ai/chat" : "";
+  window.AICC_CONFIG.aiStatusUrl = base ? base + "/api/ai/providers" : "";
+})();

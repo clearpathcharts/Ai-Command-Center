@@ -104,7 +104,8 @@
     }
     if(e.target.closest("#rescue-handoff")&&n.kind==="task"){
       const agent=handOff(n.task);
-      if(agent)renderRescue("Done. "+agent.name+" now owns the rest of \""+n.task.title+"\". Honest note: no AI engine is connected yet, so the agent will not secretly do the work. The task is safely parked in "+agent.name+"'s queue and you do not need to think about it right now.");
+      if(agent&&window.AICC_AI?.enabled()){window.AICC_AI.runTask(n.task.id);renderRescue("Done. "+agent.name+" is writing a draft for the rest of \""+n.task.title+"\". You will find it on the task in Tasks & Projects. You do not need to think about it right now.")}
+      else if(agent)renderRescue("Done. "+agent.name+" now owns the rest of \""+n.task.title+"\". AI is not connected yet, so the agent will not secretly do the work. The task is safely parked in "+agent.name+"'s queue and you do not need to think about it right now.");
       return;
     }
     if(e.target.closest("#rescue-skip")&&n.kind==="task"){skipped.add(n.task.id);renderRescue();return}

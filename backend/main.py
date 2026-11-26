@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from auth import require_firebase_user, require_worker_token
 from safety_api import router as safety_router, SAFETY_PATHS
+from ai_gateway import router as ai_router, AI_PATHS
 
 APP_DIR = Path(__file__).resolve().parent
 # Hosts like Vercel only allow writing to the temporary folder, so use it there.
@@ -44,7 +45,7 @@ app.add_middleware(
 async def enforce_local_only_mode(request, call_next):
     path = request.url.path
     public_catalog_routes = path in {"/api/catalog", "/api/catalog/categories", "/api/catalog/usage"} or path.startswith("/api/catalog/")
-    if path.startswith("/api/") and path != "/api/capabilities" and not public_catalog_routes and path not in SAFETY_PATHS:
+    if path.startswith("/api/") and path != "/api/capabilities" and not public_catalog_routes and path not in SAFETY_PATHS and path not in AI_PATHS:
         return JSONResponse(
             status_code=503,
             content={
@@ -206,6 +207,7 @@ class ApprovalIn(BaseModel):
     agent_id: Optional[str] = None
 
 app.include_router(safety_router)
+app.include_router(ai_router)
 
 @app.get("/health")
 def health():

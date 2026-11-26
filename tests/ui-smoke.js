@@ -177,6 +177,31 @@ function check(ok, label) { console.log((ok ? "PASS " : "FAIL ") + label); if (!
     check(!wide, "no sideways scrolling on phone: " + v);
   }
 
+  // 14. AI agents (with a pretend server so no real keys are needed).
+  const ai = await browser.newPage();
+  ai.on("pageerror", e => errors.push(e.message));
+  ai.on("dialog", d => d.accept());
+  const sent = [];
+  await ai.route("**/config.js", r => r.fulfill({contentType: "application/javascript", body: 'window.AICC_CONFIG={serverAddress:"https://fake-server.test"};(function(){var b="https://fake-server.test";window.AICC_CONFIG.safetyReportUrl=b+"/api/safety/report";window.AICC_CONFIG.aiChatUrl=b+"/api/ai/chat";window.AICC_CONFIG.aiStatusUrl=b+"/api/ai/providers";})();'}));
+  await ai.route("https://fake-server.test/**", r => {
+    const u = r.request().url();
+    if (u.endsWith("/api/ai/providers")) return r.fulfill({json: {ready: true, connected: ["Groq", "Google Gemini"]}});
+    if (u.endsWith("/api/ai/chat")) { sent.push(JSON.parse(r.request().postData())); return r.fulfill({json: {text: "1. Call the landlord office.\n2. Ask about the repair.", provider: "Groq", model: "test", crisis: false}}); }
+    return r.fulfill({status: 202, json: {recorded: true}});
+  });
+  await ai.goto(URL);
+  await ai.click("#safety-notice-accept");
+  await ai.fill("#command-input", "Write a note to my landlord about the broken heater");
+  await ai.click("#command-form button[type=submit]");
+  await ai.click("[data-ai-run] >> nth=0");
+  await ai.waitForSelector(".ai-draft p");
+  check((await ai.textContent(".ai-draft p")).includes("Call the landlord office"), "'Agent: do this' shows the AI draft on the task");
+  check(sent[0] && sent[0].agent_name === "Executive Assistant" && sent[0].task.includes("landlord"), "agent name and task are sent to the AI server");
+  check(!JSON.stringify(sent).toLowerCase().includes("api_key"), "no AI key is ever in the website");
+  await ai.evaluate(() => window.AICC.showView("settings"));
+  check((await ai.textContent("#ai-status")).includes("Groq"), "settings page shows which AI is connected");
+  await ai.close();
+
   check(errors.length === 0, "no JavaScript errors" + (errors.length ? ": " + errors.join(" | ") : ""));
   await browser.close();
   console.log(failures ? "\n" + failures + " FAILED" : "\nALL PASSED");

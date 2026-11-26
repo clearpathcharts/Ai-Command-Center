@@ -103,7 +103,7 @@
 
         <section class="view" id="view-workflows">
           <div class="page-heading"><div><div class="eyebrow">QUANTUM CORE · WORKFLOW BUILDER</div><h1>Team workflows</h1><p>Turn a goal into coordinated steps, each assigned to the right agent. Press "Run step by step" to walk through it one step at a time.</p></div><button class="primary-button" data-action="new-workflow">＋ Build a workflow</button></div>
-          <div class="notice-box">Honest note: no AI engine is connected yet, so agents do not do the work by themselves. Workflows organize the work, assign it, and walk you through it. Anything that sends, pays, or publishes waits for your approval.</div>
+          <div class="notice-box">Workflows organize the work, assign it, and walk you through it. On any task, press "🤖 Agent: do this" and the assigned agent writes a draft using AI (when AI is connected). Agents only write drafts — anything that sends, pays, or publishes waits for your approval.</div>
           <div id="workflow-list" class="workflow-list"></div>
         </section>
 
@@ -149,7 +149,8 @@
             <h2>Read a document for me</h2><p>Paste the text of a letter, form, or bill. We pull out the deadlines, dates, money, and contacts.</p>
             <label class="brain-label" for="intel-doc-text">Document text</label>
             <textarea class="brain-search" id="intel-doc-text" rows="7" placeholder="Paste the document text here"></textarea>
-            <div class="brain-actions"><button class="primary-button" id="intel-doc-go">Find the important parts</button></div>
+            <div class="brain-actions"><button class="primary-button" id="intel-doc-go">Find the important parts</button><button class="secondary-button" id="intel-doc-explain">🤖 Explain it in simple words</button></div>
+            <div class="intel-out" id="intel-doc-ai" hidden aria-live="polite"></div>
             <div class="intel-out" id="intel-doc-out" hidden aria-live="polite"></div>
           </section>
           <section class="panel intel-tool" id="intel-classify" role="tabpanel" hidden>
@@ -297,7 +298,7 @@
               <label class="setting-row"><span><strong>Reading speed</strong><small>How fast "Read to me" talks.</small></span><select id="read-rate"><option value="0.7">Slow</option><option value="0.9">Normal</option><option value="1.1">Fast</option></select></label>
               <button class="quiet-button" id="reset-settings">Reset how it looks</button>
             </section>
-            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode shows only your current task. Rescue Mode gives you one clear next step when things feel like too much.</p><button class="rescue-button big" data-rescue-open>✦ Start Rescue Mode</button><hr><h3>Your data on this device</h3><p>Your workspace is saved in this browser. Download a backup to keep it safe or move it to another device.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Restoring replaces the workspace on this device.</small></div></section>
+            <section class="panel settings-panel"><h2>Focus & support</h2><p>Focus Mode shows only your current task. Rescue Mode gives you one clear next step when things feel like too much.</p><button class="rescue-button big" data-rescue-open>✦ Start Rescue Mode</button><hr><h3>AI connection</h3><p id="ai-status" role="status"></p><hr><h3>Your data on this device</h3><p>Your workspace is saved in this browser. Download a backup to keep it safe or move it to another device.</p><div class="backup-actions"><button class="primary-button" id="export-data">Download workspace backup</button><label class="quiet-button import-backup" for="import-data">Restore from backup</label><input class="sr-only" type="file" id="import-data" accept="application/json,.json"><small>Restoring replaces the workspace on this device.</small></div></section>
           </div>
         </section>
       </div>
@@ -386,6 +387,7 @@
   <script src="./memory.js" defer></script>
   <script src="./executive.js" defer></script>
   <script src="./assist.js" defer></script>
+  <script src="./ai.js" defer></script>
   <script src="./intelligence.js" defer></script>
   <script src="./social.js" defer></script>
   <script src="./knowledge.js" defer></script>
